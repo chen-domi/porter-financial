@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A candid product and architecture brief for Porter, a credit-card value optimization app.">
+  <title>Porter — Product &amp; Architecture Brief</title>
+  <style>
+    :root {
+      --paper: #fbfaf7;
+      --surface: #ffffff;
+      --ink: #24231f;
+      --muted: #6d6b63;
+      --line: #e7e4dc;
+      --accent: #326c58;
+      --accent-soft: #eaf3ee;
+      --warning: #8b541d;
+      --warning-soft: #fff4df;
+      --danger: #8d3f3a;
+      --danger-soft: #faecea;
+      --shadow: 0 14px 42px rgba(38, 35, 27, .07);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.68 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 12px 0 16px; font-family: Georgia, serif; font-size: clamp(2.7rem, 6vw, 5.7rem); font-weight: 500; line-height: .98; letter-spacing: -.045em; }
+    .lede { max-width: 760px; color: var(--muted); font-size: 1.2rem; }
+    .verdict { margin-top: 30px; padding: 20px 22px; max-width: 820px; background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 4px; }
+    .layout { display: grid; grid-template-columns: 240px minmax(0, 760px); gap: 68px; justify-content: center; padding: 56px 0 100px; }
+    nav { position: sticky; top: 28px; align-self: start; font-size: .88rem; }
+    nav strong { display: block; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; }
+    nav a { display: block; padding: 7px 0; color: var(--muted); text-decoration: none; }
+    nav a:hover { color: var(--ink); }
+    main section { scroll-margin-top: 28px; }
+    h2 { margin: 66px 0 18px; padding-top: 16px; border-top: 1px solid var(--line); font-family: Georgia, serif; font-size: 2.05rem; font-weight: 500; letter-spacing: -.025em; }
+    main section:first-child h2 { margin-top: 0; }
+    h3 { margin: 30px 0 8px; font-size: 1.08rem; }
+    p { margin: 10px 0 16px; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 8px 0; }
+    code { padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; background: #f5f3ed; font: .9em ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .callout { margin: 24px 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); }
+    .callout.roast { border-color: #ecd2cf; background: var(--danger-soft); }
+    .callout.caution { border-color: #efd8b8; background: var(--warning-soft); }
+    .callout strong:first-child { display: block; margin-bottom: 5px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
+    .card { padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .card h3 { margin-top: 0; }
+    table { width: 100%; margin: 22px 0; border-collapse: collapse; font-size: .94rem; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+    .flow { margin: 22px 0; padding: 18px; overflow-x: auto; white-space: nowrap; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .83rem; }
+    .pill { display: inline-block; margin: 2px 4px 2px 0; padding: 3px 9px; color: var(--accent); background: var(--accent-soft); border-radius: 999px; font-size: .78rem; font-weight: 650; }
+    footer { padding: 26px 0 46px; color: var(--muted); border-top: 1px solid var(--line); font-size: .86rem; }
+    @media (max-width: 850px) {
+      header { padding-top: 48px; }
+      .layout { grid-template-columns: 1fr; gap: 18px; }
+      nav { position: static; display: grid; grid-template-columns: repeat(2, 1fr); padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+      nav strong { grid-column: 1 / -1; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      nav { display: none; }
+      .layout { display: block; }
+      .callout, .card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="eyebrow">Working product brief · August 2026</div>
+      <h1>Porter needs a sharper job.</h1>
+      <p class="lede">A candid definition of the product, the audience, and an architecture that is ambitious enough to teach real engineering without becoming a museum of cloud services.</p>
+      <div class="verdict"><strong>Current recommendation:</strong> Porter is a credit-card value optimization assistant for people who already hold multiple rewards cards—especially fee-bearing cards—and want to know what to use, what they are missing, and whether each card is still earning its keep.</div>
+    </div>
+  </header>
+
+  <div class="shell layout">
+    <nav aria-label="Table of contents">
+      <strong>On this page</strong>
+      <a href="#roast">01 · The roast</a>
+      <a href="#statement">02 · The statement</a>
+      <a href="#audience">03 · The audience</a>
+      <a href="#architecture">04 · Architecture</a>
+      <a href="#plaid">05 · Plaid</a>
+      <a href="#apis">06 · APIs &amp; async</a>
+      <a href="#redis">07 · Redis</a>
+      <a href="#fraud">08 · Fraud</a>
+      <a href="#aws">09 · AWS &amp; DevOps</a>
+      <a href="#roadmap">10 · Roadmap</a>
+    </nav>
+
+    <main>
+      <section id="roast">
+        <h2>01. The roast</h2>
+        <div class="callout roast"><strong>The one-line pitch sounds like six startups wearing a trench coat.</strong> “Financial intelligence,” asynchronous enrichment, anomaly detection, rewards optimization, and grounded AI each suggest a separate product surface. Together they sound impressive, but they do not tell a user what painful decision Porter solves today.</div>
+        <p>The biggest risk is not technical failure. It is building a gorgeous distributed system around a vague promise. A user does not wake up wanting “event-driven financial intelligence.” They ask: <em>Which card should I use at this restaurant? Did I waste my Amex credit this month? Is this $695 annual fee still worth it?</em></p>
+        <ul>
+          <li><strong>“Financial intelligence” is fog.</strong> Mint, Copilot, Monarch, issuers, and banks already organize transactions. Porter needs a narrower wedge.</li>
+          <li><strong>“Optimize rewards” can lie by omission.</strong> Real value depends on merchant coding, rotating categories, caps, credits, transfer partners, redemption assumptions, annual fees, and personal behavior.</li>
+          <li><strong>“AI explanations” is a feature, not the product.</strong> If deterministic rules cannot produce a useful recommendation, an LLM will only make the confusion more eloquent.</li>
+          <li><strong>“Anomaly detection” quietly implies fraud.</strong> That creates expectations around immediacy, accuracy, trust, and liability that a portfolio app should not casually claim.</li>
+          <li><strong>The infrastructure can become cosplay.</strong> Kafka, five microservices, Kubernetes, GraphQL, Redis, and three languages do not prove senior engineering if one user and one workflow would run better in a single process.</li>
+        </ul>
+        <div class="callout"><strong>A stronger product sentence</strong>Porter helps rewards-card holders get more value from cards they already own by recommending the best card for a purchase, tracking credits and benefits before they expire, and showing whether annual fees are justified by actual usage.</div>
+      </section>
+
+      <section id="statement">
+        <h2>02. Breaking down the original statement</h2>
+        <p><strong>“Porter is an event-driven financial intelligence backend that ingests transactions, enriches them asynchronously, detects anomalies, optimizes credit-card rewards, and generates grounded AI explanations.”</strong></p>
+        <table>
+          <thead><tr><th>Phrase</th><th>What it should mean</th><th>Reality check</th></tr></thead>
+          <tbody>
+            <tr><td>Event-driven</td><td>Important changes—transaction received, card benefit used, anomaly scored—are represented as events that trigger follow-up work.</td><td>This does not require microservices. A modular monolith can write an outbox event in PostgreSQL and process it with a worker.</td></tr>
+            <tr><td>Financial intelligence backend</td><td>The server converts raw account activity into decisions or insights, rather than merely storing rows.</td><td>Marketing language. Name the actual decisions: best card, unused benefit, annual-fee value, unusual charge.</td></tr>
+            <tr><td>Ingests transactions</td><td>Receives user-authorized transaction updates through an aggregator, normalizes them, deduplicates them, and stores their changing pending/posted state.</td><td>Do not build direct bank integrations. The ingestion code is yours; the bank connectivity should initially be Plaid’s.</td></tr>
+            <tr><td>Enriches asynchronously</td><td>After storage, background jobs identify merchant/category, match a card program, calculate rewards, and attach confidence/provenance without making the client wait.</td><td>Asynchronous work needs retries, idempotency, dead-letter handling, and observable job status—not just an annotation or an <code>async</code> keyword.</td></tr>
+            <tr><td>Detects anomalies</td><td>Flags behavior that differs from the user’s history: duplicate-looking charges, unusual amount, new geography, or unexpected recurring-price increase.</td><td>Call it “unusual activity insights,” not bank-grade fraud detection, unless you truly have real-time authorization data and an operations process.</td></tr>
+            <tr><td>Optimizes rewards</td><td>Evaluates the user’s owned cards, current benefit rules, category caps, credits, and valuation assumptions to recommend actions.</td><td>This is the differentiator. It should be deterministic, testable, and explainable before AI enters the loop.</td></tr>
+            <tr><td>Grounded AI explanations</td><td>An LLM explains a recommendation using retrieved Porter facts: transaction, applicable rule, cap progress, credit status, and valuation. Citations point to those facts.</td><td>The model should narrate a computed result, not invent the result. Structured inputs and provenance are the guardrails.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="audience">
+        <h2>03. Who Porter is for</h2>
+        <p>Your revised audience is much better than “anyone with money.” Start with an <strong>enthusiast-lite rewards user</strong>: someone with roughly 3–8 cards, at least one annual-fee card, and enough complexity to lose value but not enough interest to maintain a spreadsheet.</p>
+        <div class="grid">
+          <div class="card"><h3>Primary user</h3><p>Already owns cards, understands points at a basic level, wants automation, dislikes tracking credits and category rules, and worries that premium fees are becoming waste.</p></div>
+          <div class="card"><h3>Core jobs</h3><p>“Tell me which owned card to use.” “Warn me before value expires.” “Show whether this card paid for itself.” “Explain the recommendation in dollars.”</p></div>
+          <div class="card"><h3>Not the first user</h3><p>A credit beginner choosing a first card, a churner optimizing applications, a person repairing credit, or someone seeking full budgeting and net-worth management.</p></div>
+          <div class="card"><h3>Expansion later</h3><p>Card portfolio simplification, renewal/retention decisions, household optimization, travel redemption planning, and eventually card discovery—clearly separated from issuer-incentivized recommendations.</p></div>
+        </div>
+        <div class="callout caution"><strong>Validate before expanding.</strong> Interview 8–12 target users and test one promise: would they connect their accounts to avoid missing benefits and see card-level realized value? Ask for past behavior, not opinions. A narrow audience with a recurring pain beats a broad audience with mild curiosity.</div>
+      </section>
+
+      <section id="architecture">
+        <h2>04. One deployable backend, real internal boundaries</h2>
+        <p>Start with a <strong>modular monolith</strong> in Spring Boot, not a pile of microservices. “Monolith” describes deployment; it does not mean spaghetti. Keep packages/modules around clear capabilities:</p>
+        <p><span class="pill">identity</span><span class="pill">connections</span><span class="pill">transactions</span><span class="pill">cards</span><span class="pill">rewards</span><span class="pill">insights</span><span class="pill">explanations</span><span class="pill">notifications</span></p>
+        <div class="flow">Expo app → REST API → Spring Boot modular monolith → PostgreSQL<br>　　　　　　　　　　　　　　　　↓ transactional outbox<br>　　　　　　　　　　　　 background worker / queue → enrichment + scoring + notifications</div>
+        <h3>Why not microservices yet?</h3>
+        <ul>
+          <li>You do not yet know the stable service boundaries. Splitting early freezes guesses into network contracts.</li>
+          <li>Distributed systems add deployment, tracing, retries, schema versioning, authentication, local-development, and data-consistency costs.</li>
+          <li>A modular monolith still demonstrates domain modeling, events, background processing, idempotency, tests, observability, and clean interfaces.</li>
+          <li>One repository is orthogonal to service count. A monorepo can contain one service or twenty.</li>
+        </ul>
+        <h3>What about Python or C++?</h3>
+        <p><strong>Python later, behind a boundary, only if it earns its existence.</strong> It is sensible for model experimentation, offline training, data analysis, or libraries unavailable in Java. The Spring app can publish a job and a Python worker can return a structured score. Keep it in the monorepo under something like <code>services/intelligence-python</code>, with versioned schemas and contract tests.</p>
+        <p><strong>C++ is almost certainly the wrong trade.</strong> Calling an external LLM API is network-bound, not CPU-bound. C++ adds memory-safety, build, deployment, and interoperability work without making the model respond faster. Use it only if profiling later reveals a genuine native compute kernel—which is unlikely here.</p>
+        <div class="callout"><strong>Extraction rule</strong>Split a component into its own service only when it needs independent scaling, a distinct runtime, a separate reliability/security boundary, or clearly independent ownership—and the operational cost is justified by measured pain.</div>
+      </section>
+
+      <section id="plaid">
+        <h2>05. Plaid is still part of Porter</h2>
+        <p>Porter should build a <strong>Plaid integration adapter</strong>, not rebuild Plaid. Direct bank connectivity means institution-by-institution agreements, OAuth variations, credential security, data normalization, consent, compliance, refresh behavior, and breakage when banks change interfaces. That is a company-sized distraction from Porter’s differentiation.</p>
+        <p>The recommended flow is: use Plaid Link for user consent, store Plaid access tokens securely, receive webhooks, call <code>/transactions/sync</code> using a saved cursor, normalize changes into Porter’s model, and publish internal events. Plaid’s current guidance recommends <code>/transactions/sync</code> for new integrations and webhooks for update availability; transactions can be added, modified, or removed.</p>
+        <p>Plaid is a dependency, so hide it behind a <code>FinancialDataProvider</code> interface. That makes sandbox fixtures easy now and allows another aggregator later without contaminating the rewards domain with Plaid-specific objects.</p>
+        <p><a href="https://plaid.com/docs/transactions/">Plaid Transactions overview</a> · <a href="https://plaid.com/docs/transactions/webhooks/">Plaid transaction webhooks</a></p>
+      </section>
+
+      <section id="apis">
+        <h2>06. REST, events, and the async misconception</h2>
+        <h3>Use REST for the mobile-facing API</h3>
+        <p>REST is the right default for Porter’s current resource-shaped workflows: accounts, cards, transactions, insights, and recommendations. Publish an OpenAPI contract and generate or validate client types. GraphQL would add a schema server, resolver performance concerns, query-cost controls, caching complexity, and another learning surface without solving a demonstrated problem.</p>
+        <p>Add GraphQL only if the client later has many screens composing deeply nested data in constantly changing combinations and REST produces measurable over-fetching, under-fetching, or endpoint proliferation. GraphQL and REST are client/server request interfaces; neither replaces internal event processing.</p>
+        <h3>Are GET calls asynchronous or concurrent?</h3>
+        <p><strong>A GET request is not inherently asynchronous.</strong> Usually, the client sends <code>GET /insights</code>, waits, and receives the insights already stored. The server may use non-blocking I/O internally, and multiple users’ requests may run concurrently, but those are implementation details—not properties of the HTTP verb.</p>
+        <table>
+          <thead><tr><th>Concept</th><th>Meaning in Porter</th></tr></thead>
+          <tbody>
+            <tr><td>Synchronous request</td><td>The caller waits for the response. Most GET endpoints should be fast reads of previously computed state.</td></tr>
+            <tr><td>Asynchronous workflow</td><td>An API/webhook stores work and returns before enrichment finishes. A worker completes it later.</td></tr>
+            <tr><td>Concurrency</td><td>Multiple independent requests or jobs make progress during overlapping time.</td></tr>
+            <tr><td>Parallelism</td><td>Multiple jobs literally execute at the same instant on different cores/instances.</td></tr>
+          </tbody>
+        </table>
+        <p>Example: Plaid sends a webhook; Porter validates and records it quickly; an SQS worker syncs transaction changes; separate enrichment jobs can process independent transactions concurrently. The app’s GET later reads completed results plus a visible status such as <code>PROCESSING</code>. Do not launch important background work from a GET; GET should be safe and have no intended side effects.</p>
+      </section>
+
+      <section id="redis">
+        <h2>07. Redis is optional, not architectural seasoning</h2>
+        <p>Your mental model is close: Redis is an in-memory data-structure server. Data access is fast, but “short-term database” is incomplete—Redis can persist data. For Porter, PostgreSQL remains the source of truth. Redis should appear only for a measured ephemeral need.</p>
+        <div class="grid">
+          <div class="card"><h3>Good uses later</h3><ul><li>Distributed rate-limit counters with expirations</li><li>Short-lived Plaid/link/session state</li><li>Cache for expensive, frequently read card-rule results</li><li>Idempotency keys or brief distributed locks</li></ul></div>
+          <div class="card"><h3>Bad uses now</h3><ul><li>Primary transaction storage</li><li>A second source of truth for balances</li><li>A queue merely because it is available</li><li>Caching endpoints that are already fast</li></ul></div>
+        </div>
+        <p>Start without it. For AWS rate limiting, API Gateway usage controls or AWS WAF may cover the edge requirement. For background jobs, prefer SQS because it is durable and managed. Add ElastiCache for Redis when you can name the latency, contention, or rate-limit problem it solves.</p>
+        <p><a href="https://redis.io/docs/latest/develop/use-cases/rate-limiter/">Redis rate-limiting pattern</a></p>
+      </section>
+
+      <section id="fraud">
+        <h2>08. Fraud detection: adjacent project, careful claim</h2>
+        <p>Porter can include an <strong>unusual-activity module</strong>, but claiming production fraud detection is too strong. Plaid transaction feeds are generally not the same as a card issuer’s real-time authorization stream, and fraud systems require labels, low-latency decisions, severe class-imbalance handling, adversarial adaptation, alert operations, and painful false-positive tradeoffs.</p>
+        <p>A separate portfolio project is a smart way to go deeper: build a streaming fraud-risk service using a public or synthetic labeled dataset, time-aware evaluation, explainable features, drift monitoring, and a human-review path. Porter can consume its risk-score contract as an optional integration. On a résumé, this becomes two honest stories:</p>
+        <ul>
+          <li><strong>Porter:</strong> product/backend/cloud system for maximizing realized credit-card value.</li>
+          <li><strong>Fraud lab:</strong> ML/data system for transaction risk scoring with precision/recall and cost-sensitive evaluation.</li>
+        </ul>
+        <div class="callout caution"><strong>Avoid the demo trap.</strong>A model trained on a Kaggle dataset and called from an endpoint is not fraud detection by itself. The valuable engineering is temporal validation, threshold policy, monitoring, explanation, and failure handling.</div>
+      </section>
+
+      <section id="aws">
+        <h2>09. AWS and DevOps—yes, but stage it</h2>
+        <p>Porter is large enough to demonstrate a credible delivery pipeline, but “DevOpsy” should mean the product is repeatable, observable, secure, and operable—not that every AWS logo appears in the diagram.</p>
+        <h3>Recommended production-shaped AWS target</h3>
+        <div class="flow">Route 53 → CloudFront / WAF → ALB → ECS Fargate (Spring API)<br>　　　　　　　　　　　　　　　　　　　↘ ECS worker ← SQS + DLQ<br>　　　　　　　　　　　　　　　　　　　　　↓<br>　　　　　　　　　　　　　　RDS PostgreSQL · Secrets Manager · S3<br>　　　　　　　　　　　　　　CloudWatch logs/metrics/alarms · X-Ray/OTel</div>
+        <ul>
+          <li><strong>ALB</strong> distributes traffic and gives you health checks. Run at least two tasks across availability zones only in a production profile; one is fine for a cost-conscious demo.</li>
+          <li><strong>WAF or API Gateway</strong> can enforce edge-oriented throttling/rate controls. Application-level limits still matter for user-specific expensive actions such as “refresh transactions” or “generate explanation.”</li>
+          <li><strong>ECS Fargate</strong> fits the existing container-friendly Spring service without requiring Kubernetes. Lambda can handle small event tasks later, but forcing the whole Java API into functions is not necessary.</li>
+          <li><strong>SQS + dead-letter queue</strong> gives durable asynchronous work, retries, and backpressure for transaction enrichment.</li>
+          <li><strong>RDS PostgreSQL</strong> is authoritative storage. Use encryption, private subnets, backups, migrations, and least-privilege credentials.</li>
+          <li><strong>Secrets Manager/KMS</strong> protects Plaid and LLM credentials; never place them in the app or repository.</li>
+        </ul>
+        <h3>CI/CD that tells a coherent story</h3>
+        <ol>
+          <li>Pull request: formatting, unit tests, API contract checks, dependency/security scan, and container build.</li>
+          <li>Merge: produce immutable images, push to ECR, apply infrastructure via CDK or Terraform, migrate safely, deploy to a staging environment.</li>
+          <li>Gate: integration/smoke tests, then promote the same artifact to production using rolling or blue/green deployment.</li>
+          <li>Operate: dashboards, structured logs, queue-depth and DLQ alarms, latency/error SLOs, cost budgets, runbooks, and rollback.</li>
+        </ol>
+        <div class="callout"><strong>Strong portfolio framing</strong>“I built a modular event-driven application and operated it on AWS with durable queues, idempotent consumers, infrastructure as code, staged delivery, observability, and cost controls.” That is stronger than “I used 14 AWS services.”</div>
+      </section>
+
+      <section id="roadmap">
+        <h2>10. Build order that preserves the idea</h2>
+        <table>
+          <thead><tr><th>Phase</th><th>Product proof</th><th>Engineering proof</th></tr></thead>
+          <tbody>
+            <tr><td>1 · Narrow MVP</td><td>Manually enter owned cards; deterministic “best card for category” and annual-fee ledger.</td><td>Spring modules, PostgreSQL/Flyway, REST/OpenAPI, Expo integration, tests.</td></tr>
+            <tr><td>2 · Connected data</td><td>Connect sandbox accounts; classify transactions; show realized rewards and missed opportunities.</td><td>Plaid Link + webhooks + sync cursor, transactional outbox, idempotency, worker.</td></tr>
+            <tr><td>3 · Retention value</td><td>Benefit/credit expiration reminders and “did this card pay for itself?” review.</td><td>SQS/DLQ, scheduled work, notification preferences, audit trail.</td></tr>
+            <tr><td>4 · Grounded explanations</td><td>Plain-language reasons with assumptions and source facts.</td><td>Structured LLM inputs/outputs, provenance, eval set, caching and cost limits if needed.</td></tr>
+            <tr><td>5 · AWS operations</td><td>Reliable beta experience.</td><td>ECS, RDS, SQS, ALB/WAF, IaC, CI/CD, telemetry, alarms, load test.</td></tr>
+            <tr><td>6 · Optional intelligence</td><td>Unusual-activity insights or portfolio simplification.</td><td>Extract Python scoring worker only if model tooling justifies it; Redis only if measurement justifies it.</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>The decision to protect</strong>Porter’s core is not transaction ingestion, AI, fraud, or cloud architecture. Its core is a trustworthy model of <em>realized card value</em> that turns complicated rules and actual behavior into a small number of useful actions.</div>
+      </section>
+    </main>
+  </div>
+
+  <footer><div class="shell">Working brief—not a locked specification. Update it when user interviews or implementation evidence change the product thesis.</div></footer>
+</body>
+</html>
