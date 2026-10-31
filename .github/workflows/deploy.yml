@@ -1,0 +1,70 @@
+name: Deploy
+
+# Builds one image, deploys it to staging, migrates, smoke-tests, then (manually approved via
+# the "production" environment) promotes the exact same image digest to prod.
+#
+# Repository settings needed (Settings -> Secrets and variables -> Actions -> Variables):
+#   AWS_DEPLOY_ROLE_ARN   output github_deploy_role_arn from infra/shared
+#   ECR_REPOSITORY_URL    output ecr_repository_url from infra/shared
+#   TF_STATE_BUCKET       output state_bucket from infra/shared
+#   CLERK_ISSUER, ALLOWED_USER_IDS (JSON list), ALERT_EMAIL
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build:
+    if: vars.AWS_DEPLOY_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    outputs:
+      image_uri: ${{ steps.push.outputs.image_uri }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build and push (arm64, Lambda target)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          target: lambda
+          platforms: linux/arm64
+          provenance: false
+          push: true
+          tags: ${{ vars.ECR_REPOSITORY_URL }}:${{ github.sha }}
+      - id: push
+        run: echo "image_uri=${{ vars.ECR_REPOSITORY_URL }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  deploy-staging:
+    needs: build
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      environment: staging
+      image_uri: ${{ needs.build.outputs.image_uri }}
+    secrets: inherit
+
+  deploy-prod:
+    needs: [build, deploy-staging]
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      environment: prod
+      image_uri: ${{ needs.build.outputs.image_uri }}
+    secrets: inherit
