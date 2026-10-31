@@ -372,7 +372,7 @@
   .gantt-row { padding: 5px 0; }
   .gantt-row .lbl { font-size: 13px; color: var(--ink-2); }
   .gantt-row .lbl small { color: var(--muted); display: block; font-size: 11.5px; }
-  .gantt-row .lane { position: relative; height: 16px; background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: calc(100% / 16) 100%; }
+  .gantt-row .lane { position: relative; height: 16px; background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: calc(100% / 18) 100%; }
   .gbar { position: absolute; top: 2px; height: 12px; border-radius: 4px; background: var(--accent); }
   .gbar.post { background: var(--post); }
   .legend { display: flex; gap: 18px; font-size: 12.5px; color: var(--ink-2); margin-top: 12px; flex-wrap: wrap; }
@@ -417,10 +417,10 @@
     <h1>A quiet, personal command center for my money.</h1>
     <p class="lede">The MVP of Porter: one iPhone app that knows my net worth, my seven credit cards and their points, the credits I'm about to lose, and how much I have left to spend, right when I tap Apple Pay.</p>
     <div class="meta">
-      <div>Version <b>0.1 · Draft</b></div>
+      <div>Version <b>0.3 · Draft</b></div>
       <div>Date <b>October 31, 2026</b></div>
       <div>Owner <b>Dominic Chen</b></div>
-      <div>Platform <b>iOS (Expo) · FastAPI · AWS</b></div>
+      <div>Platform <b>iOS (Expo) · FastAPI · AWS serverless</b></div>
     </div>
   </div>
 </header>
@@ -466,7 +466,7 @@
       <div class="card"><div class="k">G1 · Clarity</div><p>Net worth, card balances, statement due dates, and points on one screen, refreshed at least daily.</p></div>
       <div class="card"><div class="k">G2 · No wasted value</div><p>Zero card credits expire unused without at least two reminders first.</p></div>
       <div class="card"><div class="k">G3 · Spend awareness</div><p>After an Apple Pay purchase, the Dynamic Island shows the remaining weekly/monthly budget within ~5 seconds.</p></div>
-      <div class="card"><div class="k">G4 · Engineering</div><p>Production-shaped on AWS (IaC, CI/CD, queues, observability), good enough to run on and to show off.</p></div>
+      <div class="card"><div class="k">G4 · Engineering</div><p>Production-shaped on AWS (IaC, CI/CD, queues, observability) at a baseline under $5/mo of infrastructure, with a full-scale setup that can be switched on to prove it scales.</p></div>
     </div>
 
     <h3>Non-goals for the MVP</h3>
@@ -491,8 +491,9 @@
           <tr><td>Audience</td><td>Just me, built to portfolio standard</td><td>Useful every day and doubles as a serious engineering showcase.</td></tr>
           <tr><td>Client</td><td>React Native (Expo, dev builds), iPhone only</td><td>Fast iteration. Native Swift extensions where iOS requires them (Live Activities, App Intents, FinanceKit).</td></tr>
           <tr><td>Backend</td><td>Python · FastAPI · SQLAlchemy 2 · Alembic</td><td>Python suits offer ranking, email extraction, and the AI layer.</td></tr>
-          <tr><td>Database</td><td>PostgreSQL on Amazon RDS</td><td>Single source of truth. Relational fits financial data well.</td></tr>
-          <tr><td>Hosting</td><td>AWS, staged; Terraform + GitHub Actions</td><td>Strongest infrastructure story without Kubernetes-level overhead.</td></tr>
+          <tr><td>Database</td><td>PostgreSQL on Neon (serverless, free tier)</td><td>Single source of truth. Scales to zero; reachable without a NAT Gateway.</td></tr>
+          <tr><td>Hosting</td><td>AWS serverless: Lambda + API Gateway, SQS, EventBridge, SES; Terraform + GitHub Actions</td><td>Pay per request, so it costs about $0 for one user while still being real cloud infrastructure.</td></tr>
+          <tr><td>Résumé strategy</td><td>Cheap by default, scalable on demand</td><td>The same container image also runs on ECS Fargate behind a load balancer when a Terraform switch is on. Run it for a load test, keep the evidence, then tear it down.</td></tr>
           <tr><td>Account data</td><td>Plaid (Transactions, Liabilities, Investments)</td><td>Covers due dates, minimums, statement balances, and Schwab holdings. Kept behind a provider adapter.</td></tr>
           <tr><td>Apple Card</td><td>Apple FinanceKit (on-device)</td><td>Plaid can't reach Apple Card. FinanceKit is Apple's sanctioned path.</td></tr>
           <tr><td>Points &amp; offers</td><td>Manual entry + email ingestion from Gmail</td><td>No official APIs exist. Scraping is fragile and against issuer terms.</td></tr>
@@ -968,7 +969,7 @@
   <!-- 07 -->
   <section id="architecture">
     <h2><span class="num">07</span>System architecture</h2>
-    <p class="section-sub">A modular monolith: one FastAPI codebase deployed as an API service and a worker service, with real module boundaries inside.</p>
+    <p class="section-sub">A modular monolith: one FastAPI codebase, packaged as one container image, deployed as serverless functions by default, with real module boundaries inside.</p>
 
     <div class="arch" aria-label="Architecture overview">
       <div class="tier"><div class="tier-label">Device</div><div class="boxes">
@@ -979,20 +980,20 @@
       <div class="arrow">↓ HTTPS · Clerk JWT</div>
       <div class="tier"><div class="tier-label">Edge</div><div class="boxes">
         <div class="box"><b>Route 53 + ACM</b><span>api.porter domain</span></div>
-        <div class="box"><b>ALB + WAF</b><span>TLS, rate limits</span></div>
+        <div class="box"><b>API Gateway (HTTP API)</b><span>TLS, JWT check, throttling</span></div>
       </div></div>
       <div class="arrow">↓</div>
       <div class="tier"><div class="tier-label">Compute</div><div class="boxes">
-        <div class="box hl"><b>API service</b><span>FastAPI on ECS Fargate (ARM)</span></div>
-        <div class="box hl"><b>Worker service</b><span>Same image; consumes SQS</span></div>
+        <div class="box hl"><b>API function</b><span>FastAPI on Lambda (ARM container, Mangum)</span></div>
+        <div class="box hl"><b>Worker functions</b><span>Same image; SQS-triggered</span></div>
         <div class="box"><b>EventBridge Scheduler</b><span>Digests, reminders, refreshes</span></div>
       </div></div>
       <div class="arrow">↓</div>
       <div class="tier"><div class="tier-label">Data</div><div class="boxes">
-        <div class="box hl"><b>RDS PostgreSQL</b><span>Source of truth</span></div>
+        <div class="box hl"><b>Neon PostgreSQL</b><span>Source of truth · TLS</span></div>
         <div class="box"><b>SQS + DLQ</b><span>Sync, parse, notify jobs</span></div>
         <div class="box"><b>S3</b><span>Raw emails (30-day TTL)</span></div>
-        <div class="box"><b>Secrets Manager · KMS</b><span>Plaid tokens, APNs key</span></div>
+        <div class="box"><b>SSM Parameter Store · KMS</b><span>Secrets, token encryption</span></div>
       </div></div>
       <div class="arrow">↕</div>
       <div class="tier"><div class="tier-label">External</div><div class="boxes">
@@ -1006,7 +1007,17 @@
 
     <h3>Backend modules</h3>
     <p><code>identity</code> · <code>connections</code> (Plaid, FinanceKit ingest) · <code>ledger</code> (accounts, transactions, spend events, reconciliation) · <code>networth</code> · <code>catalog</code> (cards, earn rules, benefit definitions) · <code>benefits</code> · <code>points</code> · <code>budgets</code> · <code>inbox</code> (email ingestion and parsers) · <code>notifications</code> · <code>offers</code> · <code>assistant</code>.</p>
-    <p>Modules talk through service interfaces and domain events written to a <b>transactional outbox</b> table. A relay publishes those events to SQS, so a crash can never leave a transaction stored without its follow-up work.</p>
+    <p>Modules talk through service interfaces and domain events written to a <b>transactional outbox</b> table. The API publishes them to SQS right after commit, and an EventBridge sweeper re-publishes anything left behind every minute. A crash can never leave a transaction stored without its follow-up work.</p>
+
+    <h3>Why serverless + Neon</h3>
+    <div class="callout accent">
+      <span class="k">Avoid the NAT trap</span>
+      <p>The obvious all-AWS design (Lambda in a private network talking to RDS) needs a NAT Gateway so Lambda can reach Plaid, APNs, and Claude. That alone costs about $32/mo, more than everything else combined. Porter's Lambdas stay outside a VPC and reach Neon over TLS, so there's no NAT, no idle database, and no idle servers. Aurora Serverless v2 with the Data API is the all-AWS alternative if Neon's limits are ever reached.</p>
+    </div>
+    <ul>
+      <li><b>Latency:</b> Lambda cold starts (about 1 s for a container image) don't affect the Dynamic Island, which is computed on the device. Plaid webhooks only need a response within seconds.</li>
+      <li><b>Portability:</b> the FastAPI app knows nothing about Lambda. Mangum adapts it, and the same image runs under uvicorn on Fargate or locally.</li>
+    </ul>
 
     <h3>Email ingestion (Gmail)</h3>
     <ol class="steps">
@@ -1097,7 +1108,7 @@
           <tr><td>Plaid tokens</td><td>Envelope-encrypted with KMS at the application level, in addition to RDS encryption. Never returned to the client or written to logs.</td></tr>
           <tr><td>Bank credentials</td><td>Never seen by Porter. Plaid Link and OAuth handle them.</td></tr>
           <tr><td>Webhooks</td><td>Plaid webhook JWT verification; SES inbound limited to the forwarding address and SPF/DKIM-verified senders.</td></tr>
-          <tr><td>Network</td><td>RDS in private subnets; only the ALB is public; least-privilege IAM per service.</td></tr>
+          <tr><td>Network</td><td>Lambdas run outside a VPC; Neon requires TLS and rotated credentials stored in SSM SecureString; API Gateway throttling; least-privilege IAM per function.</td></tr>
           <tr><td>Data retention</td><td>Raw emails deleted after 30 days; extracted fields kept. One-tap "disconnect and purge" per institution.</td></tr>
           <tr><td>Device</td><td>Only cached summaries on the device, in encrypted storage. No tokens.</td></tr>
           <tr><td>Audit</td><td>Structured logs with personal data redacted; an audit trail of connection and sync events.</td></tr>
@@ -1109,31 +1120,49 @@
   <!-- 11 -->
   <section id="infra">
     <h2><span class="num">11</span>Infrastructure, delivery &amp; cost</h2>
-    <p class="section-sub">Production-shaped, but sized for one user.</p>
+    <p class="section-sub">Cheap by default, scalable on demand, and the evidence that it scales is part of the deliverable.</p>
 
     <h3>Delivery pipeline</h3>
     <ul>
       <li><b>Pull request:</b> ruff, mypy, pytest (against a real Postgres), OpenAPI diff, eslint/tsc, Terraform plan.</li>
-      <li><b>Merge to main:</b> build an ARM image, push to ECR, <code>terraform apply</code> to staging, run Alembic migrations, smoke tests.</li>
-      <li><b>Promote:</b> the same image to prod with a rolling ECS deployment that rolls back automatically on failed health checks.</li>
+      <li><b>Merge to main:</b> build an ARM container image, push to ECR, <code>terraform apply</code> to staging (a Neon branch), run Alembic migrations, smoke tests.</li>
+      <li><b>Promote:</b> the same image to prod with a canary on the Lambda alias (10% for 5 minutes) and automatic rollback on error alarms.</li>
+      <li><b>Preview databases:</b> every pull request gets a free Neon database branch, so migrations are tested against a copy of real data.</li>
       <li><b>Mobile:</b> EAS Build and TestFlight; EAS Update for JavaScript-only changes.</li>
-      <li><b>Operate:</b> CloudWatch dashboards and alarms (5xx rate, DLQ depth, sync lag, budget alert), OpenTelemetry traces.</li>
+      <li><b>Operate:</b> CloudWatch alarms (5xx rate, DLQ depth, sync lag, budget) and OpenTelemetry traces sent to Grafana Cloud's free tier.</li>
     </ul>
 
     <div class="chart" id="costChart">
-      <div class="chart-title">Estimated monthly run cost, about $96</div>
-      <div class="chart-sub">Rough estimates for us-east-1 with one user, before any free-tier savings. Hover a bar for details.</div>
+      <div class="chart-title">Estimated baseline monthly cost, about $26</div>
+      <div class="chart-sub">Rough estimates for one user. v0.1's always-on design (Fargate, load balancer, RDS) was about $96. Hover a bar for details.</div>
       <div id="costBars" style="position:relative"></div>
       <div class="chart-foot"><span>Total</span><b id="costTotal"></b></div>
       <details class="tableview"><summary>View as table</summary><div class="table-wrap"><table id="costTable"><thead><tr><th>Line item</th><th>$/mo</th><th>Note</th></tr></thead><tbody></tbody></table></div></details>
     </div>
-    <p style="color:var(--muted);font-size:14px">Cost levers: skip the NAT Gateway (Fargate in public subnets behind security groups, about −$32); replace the ALB with App Runner in the early stage (about −$18). Plaid pricing depends on the plan negotiated in the Production application.</p>
+    <p style="color:var(--muted);font-size:14px">Only about $3 of this is AWS. The real costs are Apple (fixed), Plaid (check trial and pay-as-you-go pricing when applying; Teller and SimpleFIN are cheaper fallbacks behind the provider adapter), and a hard-capped Claude budget.</p>
+
+    <h3>Scale profile (on demand)</h3>
+    <p>Terraform has a <code>scale</code> variable. When it's on, the same image is also deployed to <b>ECS Fargate behind an Application Load Balancer</b>, with autoscaling and WAF, alongside the serverless stack.</p>
+    <ol class="steps">
+      <li><code>terraform apply -var scale=true</code> brings the scaled setup up in about 10 minutes.</li>
+      <li>k6 load tests run against both setups using demo data: throughput, p95 latency, error rate, cost per 1,000 requests.</li>
+      <li>Dashboards and results are exported to <code>docs/benchmarks/</code>.</li>
+      <li><code>terraform destroy</code>. A few hours of it costs about $1.</li>
+    </ol>
+    <p>This gives the résumé a measured claim, for example "serverless or containers from one codebase via IaC; load-tested to N req/s; $3/mo AWS baseline", instead of a bill for idle servers.</p>
+
+    <h3>Showcase without exposing my finances</h3>
+    <div class="grid3">
+      <div class="card"><div class="k">Demo mode</div><p>A separate user backed by the Plaid sandbox plus seeded cards, benefits, and purchases. Safe to hand to anyone.</p></div>
+      <div class="card"><div class="k">60-second video</div><p>Apple Pay tap → Dynamic Island → email and Plaid matched to the same purchase. The single most persuasive asset.</p></div>
+      <div class="card"><div class="k">Case study</div><p>A short page: architecture, decision records, benchmarks, cost. Linked from the README.</p></div>
+    </div>
   </section>
 
   <!-- 12 -->
   <section id="roadmap">
     <h2><span class="num">12</span>Roadmap</h2>
-    <p class="section-sub">Durations assume about 10–15 hours a week; read them as relative. The MVP is M0–M3.</p>
+    <p class="section-sub">Durations assume about 10–15 hours a week; read them as relative. The MVP is M0–M3; M4 turns it into a portfolio piece.</p>
 
     <div class="chart">
       <div class="chart-title">Milestones by week</div>
@@ -1146,12 +1175,13 @@
       <table>
         <thead><tr><th>Milestone</th><th>Product outcome</th><th>Engineering outcome</th></tr></thead>
         <tbody>
-          <tr><td class="nowrap"><b>M0</b> Foundations</td><td>App shell, design system, sign-in + Face ID</td><td>Monorepo, Terraform (VPC, RDS, ECS, ECR), CI/CD, FastAPI skeleton, Alembic. <b>Apply for Plaid Production and the FinanceKit entitlement on day one.</b></td></tr>
+          <tr><td class="nowrap"><b>M0</b> Foundations</td><td>App shell, design system, sign-in + Face ID</td><td>Monorepo, Terraform (Lambda, API Gateway, SQS, ECR, Neon), CI/CD, FastAPI skeleton, Alembic, AWS Budgets alarm. <b>Apply for Plaid Production and the FinanceKit entitlement on day one.</b></td></tr>
           <tr><td class="nowrap"><b>M1</b> Connected money</td><td>All accounts linked; net worth, cards, due dates, transactions</td><td>Plaid adapter, webhooks, sync cursor, outbox + SQS worker, snapshots</td></tr>
           <tr><td class="nowrap"><b>M2</b> Benefits &amp; points</td><td>Expiring credits on Home, reminders, points with estimates</td><td>Catalog YAML + loader, period generator, usage matcher, APNs push, SES inbound + first parsers</td></tr>
           <tr><td class="nowrap"><b>M3</b> Real-time &amp; budgets</td><td>Apple Pay → Dynamic Island, budgets, daily digest, Apple Card</td><td>Swift targets, App Intent, Live Activity push, reconciliation engine, FinanceKit module</td></tr>
-          <tr><td class="nowrap"><b>M4</b> Offers</td><td>Ranked, relevant offers</td><td>Offer parsers, screenshot extraction, relevance v1, feedback logging</td></tr>
-          <tr><td class="nowrap"><b>M5</b> AI assistant</td><td>Ask, weekly summary, which card, suggestions</td><td>Tool layer, evaluation suite in CI, cost caps, detector framework</td></tr>
+          <tr><td class="nowrap"><b>M4</b> Showcase</td><td>Demo mode, video, case study</td><td>Scale profile (Fargate + load balancer), k6 benchmarks, decision records</td></tr>
+          <tr><td class="nowrap"><b>M5</b> Offers</td><td>Ranked, relevant offers</td><td>Offer parsers, screenshot extraction, relevance v1, feedback logging</td></tr>
+          <tr><td class="nowrap"><b>M6</b> AI assistant</td><td>Ask, weekly summary, which card, suggestions</td><td>Tool layer, evaluation suite in CI, cost caps, detector framework</td></tr>
         </tbody>
       </table>
     </div>
@@ -1172,6 +1202,7 @@
           <tr><td>Purchases double-counted in budgets</td><td><b>0</b></td></tr>
           <tr><td>Daily sync success across connections</td><td><b>≥ 99%</b></td></tr>
           <tr><td>Home screen ready from cold start</td><td><b>&lt; 1.5 s</b></td></tr>
+          <tr><td>Baseline AWS cost</td><td><b>≤ $5 / month</b></td></tr>
           <tr><td>I open it daily without being prompted</td><td><b>≥ 5 days/week</b></td></tr>
         </tbody>
       </table>
@@ -1190,7 +1221,8 @@
           <tr><td>Bilt (new issuer) not well covered by Plaid</td><td>Medium</td><td>Test in M1; fall back to alert emails and manual balances.</td></tr>
           <tr><td>Shortcuts automation unreliable or changed in a future iOS release</td><td>Medium</td><td>Email alerts as the second real-time path; health check reports "no Wallet events in 48 h".</td></tr>
           <tr><td>Issuers change benefits or email templates</td><td>Medium</td><td>Catalog is data; parsers are fixture-tested; LLM fallback plus review inbox; parse-failure alarm.</td></tr>
-          <tr><td>AWS cost creep</td><td>Low</td><td>AWS Budgets alert at $120; no NAT Gateway; ARM Fargate; smallest RDS instance.</td></tr>
+          <tr><td>AWS cost creep</td><td>Low</td><td>AWS Budgets alarm at $10; no NAT Gateway; scale profile destroyed after every use (CI check flags it if left running).</td></tr>
+          <tr><td>Neon free-tier limits or outage</td><td>Low</td><td>Data is small (well under 0.5 GB); nightly <code>pg_dump</code> to S3; Aurora Serverless v2 is a documented migration path.</td></tr>
           <tr><td>Scope creep (it's my app, everything is tempting)</td><td>High</td><td>This PRD: offers and AI stay out of the MVP until M3 is in daily use.</td></tr>
         </tbody>
       </table>
@@ -1221,14 +1253,13 @@
 (function () {
   // Cost chart (single series: no legend; title names it)
   var costs = [
-    ["Fargate", 18, "API + worker: 2 ARM tasks, 0.25 vCPU / 0.5 GB each"],
-    ["Load balancer", 18, "Fixed hourly + LCU; App Runner can replace it early"],
-    ["RDS Postgres", 16, "db.t4g.micro, 20 GB gp3, 7-day backups"],
-    ["Plaid", 15, "~6 connections; depends on the plan negotiated"],
-    ["Claude API", 10, "Email extraction now, assistant later; hard cap"],
-    ["Apple Developer", 8, "$99 / year"],
-    ["Networking", 6, "Public IPv4s; no NAT Gateway"],
-    ["DNS, email, storage", 5, "Route 53, SES, S3, KMS, Secrets Manager, CloudWatch, ECR"]
+    ["Plaid", 10, "Estimate; depends on plan (check trial / pay-as-you-go at application)"],
+    ["Apple Developer", 8, "$99 / year; required for push, Live Activities, FinanceKit"],
+    ["Claude API", 4, "Hard cap; small model for email extraction"],
+    ["AWS serverless", 2, "Lambda, API Gateway, SQS, EventBridge, SES, S3, ECR; mostly free tier"],
+    ["KMS + domain", 2, "1 KMS key + Route 53 zone and domain (~$14/yr)"],
+    ["Neon Postgres", 0, "Free tier: 0.5 GB, scales to zero"],
+    ["Observability", 0, "CloudWatch free tier + Grafana Cloud free"]
   ];
   var max = Math.max.apply(null, costs.map(function (c) { return c[1]; }));
   var bars = document.getElementById("costBars");
@@ -1258,14 +1289,15 @@
   document.getElementById("costTotal").textContent = "≈ $" + total + " / month";
 
   // Roadmap gantt (weeks 1–16)
-  var W = 16;
+  var W = 18;
   var ms = [
     ["M0", "Foundations", 1, 2, true, "Repo, Terraform, CI/CD, auth, Plaid + FinanceKit applications"],
     ["M1", "Connected money", 3, 5, true, "Plaid sync, net worth, cards, due dates"],
     ["M2", "Benefits & points", 6, 8, true, "Catalog, expiring credits, reminders, email ingestion"],
     ["M3", "Real-time & budgets", 9, 11, true, "Wallet → Dynamic Island, budgets, digest, Apple Card"],
-    ["M4", "Offers", 12, 13, false, "Offer parsing + relevance ranking"],
-    ["M5", "AI assistant", 14, 16, false, "Ask, weekly summary, which card, suggestions"]
+    ["M4", "Showcase", 12, 13, false, "Demo mode, scale profile + load test, video, case study"],
+    ["M5", "Offers", 14, 15, false, "Offer parsing + relevance ranking"],
+    ["M6", "AI assistant", 16, 18, false, "Ask, weekly summary, which card, suggestions"]
   ];
   var g = document.getElementById("gantt");
   var gtip = document.createElement("div");
@@ -1273,7 +1305,7 @@
   var axis = document.createElement("div");
   axis.className = "gantt-axis";
   var ticks = "";
-  [1, 4, 8, 12, 16].forEach(function (w) { ticks += '<span style="left:' + ((w - 0.5) / W * 100) + '%">W' + w + "</span>"; });
+  [1, 6, 12, 18].forEach(function (w) { ticks += '<span style="left:' + ((w - 0.5) / W * 100) + '%">W' + w + "</span>"; });
   axis.innerHTML = '<div></div><div class="ticks">' + ticks + "</div>";
   g.appendChild(axis);
   ms.forEach(function (m, i) {
