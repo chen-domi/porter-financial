@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porter MVP PRD</title>
+<meta name="description" content="Product requirements for Porter, a personal, mobile-first finance app: net worth, cards, points, benefits, real-time budgets, offers, and an AI layer.">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --ink: #17171a;
+    --ink-2: #4a4a50;
+    --muted: #85858c;
+    --line: #e6e5e1;
+    --line-strong: #d6d5d0;
+    --accent: #2f4f6f;
+    --accent-soft: #e9eef3;
+    --accent-track: #d3dde7;
+    --warn: #8a5a12;
+    --warn-soft: #f7efe1;
+    --ok: #2d6a4f;
+    --code-bg: #f1f0ec;
+    --post: #b9b8b3;
+    --phone: #0b0b0c;
+    --phone-ink: #f4f4f2;
+    --phone-muted: #8e8e93;
+    --phone-line: #232326;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f0f11;
+      --surface: #17171a;
+      --ink: #ededeb;
+      --ink-2: #b6b6bb;
+      --muted: #7d7d84;
+      --line: #26262a;
+      --line-strong: #34343a;
+      --accent: #8fb0cf;
+      --accent-soft: #1b2632;
+      --accent-track: #26384a;
+      --warn: #e0b46a;
+      --warn-soft: #2a2216;
+      --ok: #7cc4a0;
+      --code-bg: #1f1f23;
+      --post: #55555b;
+      --phone: #000000;
+      --phone-line: #1d1d20;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f0f11;
+    --surface: #17171a;
+    --ink: #ededeb;
+    --ink-2: #b6b6bb;
+    --muted: #7d7d84;
+    --line: #26262a;
+    --line-strong: #34343a;
+    --accent: #8fb0cf;
+    --accent-soft: #1b2632;
+    --accent-track: #26384a;
+    --warn: #e0b46a;
+    --warn-soft: #2a2216;
+    --ok: #7cc4a0;
+    --code-bg: #1f1f23;
+    --post: #55555b;
+    --phone: #000000;
+    --phone-line: #1d1d20;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15.5px/1.65 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--ink); text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--ink); }
+
+  .wrap { width: min(1120px, 100% - 32px); margin: 0 auto; }
+
+  /* Header */
+  header.top { padding: 72px 0 40px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.04; letter-spacing: -.035em; font-weight: 600; margin: 14px 0 16px; max-width: 820px; }
+  .lede { font-size: 18px; color: var(--ink-2); max-width: 700px; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 28px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 500; }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 64px; padding: 48px 0 96px; }
+  nav.toc { position: sticky; top: 32px; align-self: start; font-size: 13px; }
+  nav.toc .label { color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
+  nav.toc a { display: block; padding: 5px 0; color: var(--ink-2); text-decoration: none; }
+  nav.toc a:hover { color: var(--ink); }
+  nav.toc a span { display: inline-block; width: 26px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  main { min-width: 0; max-width: 800px; }
+
+  section { scroll-margin-top: 24px; }
+  section + section { margin-top: 72px; }
+  h2 { font-size: 26px; letter-spacing: -.022em; font-weight: 600; margin: 0 0 6px; }
+  h2 .num { color: var(--muted); font-weight: 400; margin-right: 10px; font-variant-numeric: tabular-nums; }
+  .section-sub { color: var(--muted); margin: 0 0 24px; }
+  h3 { font-size: 17px; letter-spacing: -.01em; font-weight: 600; margin: 36px 0 8px; }
+  h4 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 22px 0 6px; }
+  p { margin: 8px 0 14px; }
+  ul, ol { padding-left: 20px; margin: 8px 0 16px; }
+  li { margin: 5px 0; }
+  li::marker { color: var(--muted); }
+  code { font: 12.5px/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--code-bg); padding: 2px 5px; border-radius: 4px; }
+  strong { font-weight: 600; }
+
+  /* Components */
+  .callout { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 18px 20px; margin: 20px 0; }
+  .callout .k { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
+  .callout.accent { border-left: 3px solid var(--accent); }
+  .callout.warn { border-left: 3px solid var(--warn); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .table-wrap { overflow-x: auto; margin: 16px 0 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  td.nowrap { white-space: nowrap; }
+  td .sub { display: block; color: var(--muted); font-size: 12.5px; }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); white-space: nowrap; }
+  .tag.p0 { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .tag.p1 { color: var(--ink); }
+  .tag.p2 { color: var(--muted); }
+  .tag.mvp { color: var(--accent); border-color: var(--accent); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card h3, .card h4 { margin-top: 0; }
+  .card p { margin: 4px 0 0; color: var(--ink-2); font-size: 14px; }
+  .card .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  .feature { border-top: 1px solid var(--line); padding-top: 4px; margin-top: 40px; }
+  .feature-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 20px 0 4px; }
+  .feature-head h3 { margin: 0; }
+  .feature-head .fid { font: 12px ui-monospace, "SF Mono", Menlo, monospace; color: var(--muted); }
+  .req { list-style: none; padding: 0; }
+  .req li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--line); margin: 0; }
+  .req li:last-child { border-bottom: 0; }
+  .ac { color: var(--ink-2); font-size: 14px; }
+
+  /* Architecture */
+  .arch { display: grid; gap: 10px; margin: 20px 0; }
+  .tier { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: stretch; }
+  .tier-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-top: 12px; }
+  .boxes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font-size: 13.5px; flex: 1 1 150px; }
+  .box b { display: block; font-weight: 600; font-size: 13.5px; }
+  .box span { color: var(--muted); font-size: 12.5px; }
+  .box.hl { border-color: var(--accent); }
+  .arrow { text-align: center; color: var(--muted); font-size: 13px; padding-left: 122px; line-height: 1; }
+
+  /* Flow steps */
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; }
+  .steps li { counter-increment: s; position: relative; padding: 2px 0 12px 40px; margin: 0; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line-strong); font-size: 12px; display: grid; place-items: center; color: var(--ink-2); background: var(--surface); }
+  .steps li::after { content: ""; position: absolute; left: 12px; top: 28px; bottom: 0; width: 1px; background: var(--line); }
+  .steps li:last-child::after { display: none; }
+
+  /* Phone mocks */
+  .mocks { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; margin: 28px 0 8px; }
+  .mock-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .mock-caption { font-size: 12.5px; color: var(--muted); text-align: center; max-width: 280px; }
+  .phone { width: 280px; height: 580px; border-radius: 44px; background: var(--phone); color: var(--phone-ink); padding: 14px 18px; position: relative; overflow: hidden; box-shadow: 0 0 0 1px var(--line-strong), 0 30px 60px -30px rgba(0,0,0,.35); font-size: 12px; }
+  .island { margin: 0 auto; width: 96px; height: 28px; border-radius: 20px; background: #000; box-shadow: 0 0 0 1px #1a1a1c; }
+  .island.expanded { width: 100%; height: auto; border-radius: 30px; padding: 14px 16px 14px; }
+  .isl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .isl-card { display: flex; align-items: center; gap: 8px; }
+  .chip { width: 26px; height: 17px; border-radius: 3px; background: #b8a77a; }
+  .chip.gold { background: #b59a5c; }
+  .isl-merchant { font-size: 12px; color: var(--phone-muted); }
+  .isl-amt { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+  .isl-budget { margin-top: 12px; }
+  .isl-budget .row { display: flex; justify-content: space-between; color: var(--phone-muted); font-size: 11px; margin-bottom: 5px; }
+  .isl-budget .row b { color: var(--phone-ink); font-weight: 600; }
+  .bar { height: 5px; border-radius: 3px; background: #2a2a2e; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 3px; background: #e9e9e6; }
+  .isl-hint { margin-top: 10px; font-size: 11px; color: var(--phone-muted); border-top: 1px solid #1f1f22; padding-top: 9px; }
+  .ph-status { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; padding: 2px 8px 0; margin-top: -24px; margin-bottom: 18px; }
+  .ph-k { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--phone-muted); }
+  .ph-nw { font-size: 30px; font-weight: 600; letter-spacing: -.03em; margin: 2px 0 0; }
+  .ph-delta { color: var(--phone-muted); font-size: 11px; }
+  .ph-spark { margin: 10px 0 14px; display: block; width: 100%; height: 42px; }
+  .ph-sec { margin-top: 14px; }
+  .ph-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--phone-line); }
+  .ph-item:last-child { border-bottom: 0; }
+  .ph-item .t { font-size: 12.5px; }
+  .ph-item .s { font-size: 10.5px; color: var(--phone-muted); }
+  .ph-item .v { font-size: 12.5px; font-weight: 600; text-align: right; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #d4a24c; display: inline-block; margin-right: 7px; vertical-align: 1px; }
+  .dot.n { background: #6b6b70; }
+  .ph-tabs { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; padding: 12px 18px 26px; border-top: 1px solid var(--phone-line); font-size: 10px; color: var(--phone-muted); background: var(--phone); }
+  .ph-tabs .on { color: var(--phone-ink); }
+  .ph-lock-time { text-align: center; font-size: 64px; font-weight: 600; letter-spacing: -.04em; margin: 30px 0 0; line-height: 1; }
+  .ph-lock-date { text-align: center; font-size: 13px; color: var(--phone-muted); margin-top: 6px; }
+  .la { margin-top: 210px; background: rgba(40,40,44,.9); border-radius: 22px; padding: 14px 16px; }
+
+  /* Charts */
+  .chart { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 14px; margin: 18px 0; }
+  .chart-title { font-weight: 600; font-size: 14.5px; }
+  .chart-sub { color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+  .hbar { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center; padding: 5px 0; position: relative; }
+  .hbar .lbl { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hbar .track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .hbar .fill { height: 14px; background: var(--accent); border-radius: 0 4px 4px 0; flex: none; }
+  .hbar .val { font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hbar:hover .fill, .gantt-row:hover .gbar { filter: brightness(1.12); }
+  .hbar:hover { background: var(--accent-soft); border-radius: 6px; }
+  .chart-foot { display: flex; justify-content: space-between; border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; font-size: 13px; }
+  .chart-foot b { font-variant-numeric: tabular-nums; }
+
+  .tip { position: absolute; pointer-events: none; z-index: 5; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 9px; border-radius: 6px; white-space: nowrap; opacity: 0; transform: translateY(-4px); transition: opacity .12s; left: 0; top: 0; }
+  .tip.on { opacity: 1; }
+
+  .gantt { position: relative; }
+  .gantt-axis, .gantt-row { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center; }
+  .gantt-axis .ticks { position: relative; height: 18px; font-size: 11px; color: var(--muted); }
+  .gantt-axis .ticks span { position: absolute; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+  .gantt-row { padding: 5px 0; }
+  .gantt-row .lbl { font-size: 13px; color: var(--ink-2); }
+  .gantt-row .lbl small { color: var(--muted); display: block; font-size: 11.5px; }
+  .gantt-row .lane { position: relative; height: 16px; background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: calc(100% / 16) 100%; }
+  .gbar { position: absolute; top: 2px; height: 12px; border-radius: 4px; background: var(--accent); }
+  .gbar.post { background: var(--post); }
+  .legend { display: flex; gap: 18px; font-size: 12.5px; color: var(--ink-2); margin-top: 12px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+  .mvp-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px solid var(--ink); }
+  .mvp-line span { position: absolute; top: -2px; left: 6px; font-size: 11px; color: var(--ink); white-space: nowrap; font-weight: 600; }
+
+  details.tableview { margin-top: 10px; font-size: 13px; }
+  details.tableview summary { cursor: pointer; color: var(--muted); }
+  details.tableview table { margin-top: 8px; font-size: 13px; }
+
+  footer { border-top: 1px solid var(--line); padding: 24px 0 48px; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; padding-top: 28px; }
+    nav.toc { position: static; display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
+    nav.toc .label { grid-column: 1 / -1; }
+    header.top { padding-top: 48px; }
+  }
+  @media (max-width: 640px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    .tier { grid-template-columns: 1fr; gap: 6px; }
+    .tier-label { padding-top: 0; }
+    .arrow { padding-left: 0; }
+    .hbar, .gantt-axis, .gantt-row { grid-template-columns: 110px 1fr; }
+    .hbar .lbl { font-size: 12px; }
+    .phone { width: 264px; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .layout { display: block; }
+    .card, .callout, .chart, .table-wrap { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Porter · Product requirements</div>
+    <h1>A quiet, personal command center for my money.</h1>
+    <p class="lede">The MVP of Porter: one iPhone app that knows my net worth, my seven credit cards and their points, the credits I'm about to lose, and how much I have left to spend, right when I tap Apple Pay.</p>
+    <div class="meta">
+      <div>Version <b>0.1 · Draft</b></div>
+      <div>Date <b>October 31, 2026</b></div>
+      <div>Owner <b>Dominic Chen</b></div>
+      <div>Platform <b>iOS (Expo) · FastAPI · AWS</b></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Contents">
+    <div class="label">Contents</div>
+    <a href="#summary"><span>01</span>Summary</a>
+    <a href="#decisions"><span>02</span>Decisions</a>
+    <a href="#portfolio"><span>03</span>Card portfolio</a>
+    <a href="#features"><span>04</span>Features</a>
+    <a href="#experience"><span>05</span>Experience</a>
+    <a href="#realtime"><span>06</span>Real-time spend</a>
+    <a href="#architecture"><span>07</span>Architecture</a>
+    <a href="#data"><span>08</span>Data model</a>
+    <a href="#ai"><span>09</span>AI-native</a>
+    <a href="#security"><span>10</span>Security</a>
+    <a href="#infra"><span>11</span>Infra &amp; cost</a>
+    <a href="#roadmap"><span>12</span>Roadmap</a>
+    <a href="#metrics"><span>13</span>Success</a>
+    <a href="#risks"><span>14</span>Risks</a>
+    <a href="#open"><span>15</span>Open questions</a>
+  </nav>
+
+  <main>
+
+  <!-- 01 -->
+  <section id="summary">
+    <h2><span class="num">01</span>Summary</h2>
+    <p class="section-sub">What we're building, for whom, and what "done" means for the MVP.</p>
+
+    <h3>Problem</h3>
+    <p>My finances are spread across six institutions and seven cards. Each card has its own points currency, statement cycle, and a growing list of monthly, quarterly, and semi-annual credits. No single app shows net worth, card balances, due dates, points, and <em>unused credits</em> together. None of them tell me, at the moment I pay, what that purchase did to my budget.</p>
+
+    <h3>Product statement</h3>
+    <div class="callout accent">
+      <span class="k">Porter is</span>
+      <p>A private, iPhone-first finance app for one person. It brings every account into a single calm view, warns me before card value expires, and reflects each purchase back to me in real time. Later it becomes a financial assistant I can talk to.</p>
+    </div>
+
+    <h3>Goals</h3>
+    <div class="grid2">
+      <div class="card"><div class="k">G1 · Clarity</div><p>Net worth, card balances, statement due dates, and points on one screen, refreshed at least daily.</p></div>
+      <div class="card"><div class="k">G2 · No wasted value</div><p>Zero card credits expire unused without at least two reminders first.</p></div>
+      <div class="card"><div class="k">G3 · Spend awareness</div><p>After an Apple Pay purchase, the Dynamic Island shows the remaining weekly/monthly budget within ~5 seconds.</p></div>
+      <div class="card"><div class="k">G4 · Engineering</div><p>Production-shaped on AWS (IaC, CI/CD, queues, observability), good enough to run on and to show off.</p></div>
+    </div>
+
+    <h3>Non-goals for the MVP</h3>
+    <ul>
+      <li>Multi-user accounts, sharing, or onboarding for anyone else. The data model stays user-scoped so this could change later.</li>
+      <li>Moving money: no payments, transfers, or card actions. Porter is read-only against institutions.</li>
+      <li>Android or web. Expo keeps both possible later.</li>
+      <li>Scraping issuer websites or storing bank credentials.</li>
+      <li>Crypto and brokerages other than Schwab.</li>
+      <li>Card application or churning recommendations.</li>
+    </ul>
+  </section>
+
+  <!-- 02 -->
+  <section id="decisions">
+    <h2><span class="num">02</span>Decisions locked</h2>
+    <p class="section-sub">Settled in the kickoff Q&amp;A. Changing any of these means revisiting this document.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>Decision</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Audience</td><td>Just me, built to portfolio standard</td><td>Useful every day and doubles as a serious engineering showcase.</td></tr>
+          <tr><td>Client</td><td>React Native (Expo, dev builds), iPhone only</td><td>Fast iteration. Native Swift extensions where iOS requires them (Live Activities, App Intents, FinanceKit).</td></tr>
+          <tr><td>Backend</td><td>Python · FastAPI · SQLAlchemy 2 · Alembic</td><td>Python suits offer ranking, email extraction, and the AI layer.</td></tr>
+          <tr><td>Database</td><td>PostgreSQL on Amazon RDS</td><td>Single source of truth. Relational fits financial data well.</td></tr>
+          <tr><td>Hosting</td><td>AWS, staged; Terraform + GitHub Actions</td><td>Strongest infrastructure story without Kubernetes-level overhead.</td></tr>
+          <tr><td>Account data</td><td>Plaid (Transactions, Liabilities, Investments)</td><td>Covers due dates, minimums, statement balances, and Schwab holdings. Kept behind a provider adapter.</td></tr>
+          <tr><td>Apple Card</td><td>Apple FinanceKit (on-device)</td><td>Plaid can't reach Apple Card. FinanceKit is Apple's sanctioned path.</td></tr>
+          <tr><td>Points &amp; offers</td><td>Manual entry + email ingestion from Gmail</td><td>No official APIs exist. Scraping is fragile and against issuer terms.</td></tr>
+          <tr><td>Auth</td><td>Clerk (allowlisted to my user) + Face ID lock</td><td>Managed, secure sign-in; the app locks behind biometrics.</td></tr>
+          <tr><td>Net worth</td><td>Linked accounts (banks, cards, Schwab)</td><td>No manual assets. Crypto later.</td></tr>
+          <tr><td>Notifications</td><td>Push: expiring benefits, payments due, daily digest, every purchase</td><td>Purchases surface as a Live Activity in the Dynamic Island when possible.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="portfolio">
+    <h2><span class="num">03</span>Card portfolio</h2>
+    <p class="section-sub">The seven cards Porter has to understand on day one, and how each one gets its data.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Card</th><th>Rewards</th><th>What Porter tracks</th><th>Data source</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nowrap"><b>Amex Platinum</b><span class="sub">Charge card</span></td>
+            <td>Membership Rewards</td>
+            <td>Many periodic credits: hotel (semi-annual), Resy (quarterly), lululemon (quarterly), digital entertainment (monthly), Uber Cash (monthly + December), airline incidentals, CLEAR, Walmart+, Equinox, and more. The highest-stakes card for G2.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Amex Gold</b></td>
+            <td>Membership Rewards</td>
+            <td>Monthly dining, Uber Cash, and Dunkin' credits; semi-annual Resy credit. 4× dining and US supermarkets.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Chase Sapphire Preferred</b></td>
+            <td>Ultimate Rewards</td>
+            <td>Annual Chase Travel hotel credit (cardmember year), DashPass activation, anniversary points bonus. Main UR pool.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Chase Freedom Flex</b></td>
+            <td>Ultimate Rewards</td>
+            <td><b>Quarterly 5% category activation</b> and progress toward the quarterly cap. Points pool into the Sapphire Preferred.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Chase Freedom Unlimited</b></td>
+            <td>Ultimate Rewards</td>
+            <td>Base 1.5×; 3× dining and drugstores. Pools into the Sapphire Preferred.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Capital One Quicksilver</b></td>
+            <td>Cash back</td>
+            <td>Flat 1.5% cash back balance. Few or no credits.</td>
+            <td>Plaid</td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Apple Card</b></td>
+            <td>Daily Cash</td>
+            <td>Daily Cash earned (2% Apple Pay, 3% at select merchants), balance, and due date.</td>
+            <td>FinanceKit<span class="sub">Plaid does not support Apple Card</span></td>
+          </tr>
+          <tr>
+            <td class="nowrap"><b>Bilt Blue</b></td>
+            <td>Bilt Points</td>
+            <td>Points balance, Rent Day promos, earn on rent.</td>
+            <td>Plaid<span class="sub">Confirm coverage for the current Bilt issuer early</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="k">Benefits are data, not code</span>
+      <p>Issuers change credits often; the Amex Platinum list alone was overhauled in 2025. Every card's credits, earn rates, and reset periods live in a versioned <b>card catalog</b> (YAML in the repo, loaded into Postgres) and are checked against the issuer's current terms when seeded. Changing a credit should be a data edit and never a code deploy. The credit names above are illustrative until that check happens.</p>
+    </div>
+
+    <h3>Points programs</h3>
+    <div class="grid3">
+      <div class="card"><div class="k">Amex MR</div><p>Pooled across Platinum and Gold.</p></div>
+      <div class="card"><div class="k">Chase UR</div><p>Sapphire Preferred, Freedom Flex, and Freedom Unlimited, combined into the Sapphire Preferred.</p></div>
+      <div class="card"><div class="k">Bilt · C1 · Apple</div><p>Bilt Points, Quicksilver cash back, Apple Daily Cash.</p></div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="features">
+    <h2><span class="num">04</span>Features &amp; requirements</h2>
+    <p class="section-sub">P0 must ship in the MVP. P1 ships in the MVP if time allows. P2 is post-MVP. Each feature has acceptance criteria.</p>
+
+    <!-- F1 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F1</span><h3>Account connections</h3><span class="tag mvp">MVP</span></div>
+      <p>Link Amex, Chase, Capital One, Bank of America, Bilt, and Schwab through Plaid Link, and Apple Card through FinanceKit.</p>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>Plaid Link (OAuth institutions) from the app; access tokens are exchanged and stored encrypted server-side, never on the device.</span></li>
+        <li><span class="tag p0">P0</span><span>Incremental sync with <code>/transactions/sync</code> and a saved cursor, driven by Plaid webhooks, plus a scheduled safety refresh every 6 hours.</span></li>
+        <li><span class="tag p0">P0</span><span>Liabilities (statement balance, minimum due, due date, APR) and Investments (Schwab holdings and balances).</span></li>
+        <li><span class="tag p0">P0</span><span>Connection health: show "needs re-auth" when an item breaks, with a one-tap fix through Link update mode.</span></li>
+        <li><span class="tag p1">P1</span><span>Apple Card through a FinanceKit native module. Fallback: monthly statement CSV import if the entitlement is delayed.</span></li>
+        <li><span class="tag p1">P1</span><span>A <code>FinancialDataProvider</code> interface, so sandbox fixtures and a second aggregator can plug in without touching domain code.</span></li>
+      </ul>
+      <p class="ac"><b>Accepted when:</b> all six institutions are linked in production, balances are under 24 hours old, and an expired login appears on the dashboard within one sync cycle.</p>
+    </div>
+
+    <!-- F2 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F2</span><h3>Net worth, cards &amp; payments</h3><span class="tag mvp">MVP</span></div>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>Net worth = assets (checking, savings, Schwab) − liabilities (card balances), with a daily snapshot table for history (1W / 1M / 3M / 1Y / All).</span></li>
+        <li><span class="tag p0">P0</span><span>Per-card view: current balance, statement balance, credit limit and utilization, due date, minimum due, and last payment.</span></li>
+        <li><span class="tag p0">P0</span><span>Upcoming payments list sorted by due date, with "statement balance covered by checking?" status.</span></li>
+        <li><span class="tag p0">P0</span><span>Transactions list with search, filtering by card or category, and pending/posted state.</span></li>
+        <li><span class="tag p1">P1</span><span>Net worth change explained: "+$1,240 this week: Schwab +$980, cash +$410, cards −$150".</span></li>
+        <li><span class="tag p2">P2</span><span>Optional points value in net worth, using user-set cents-per-point (off by default).</span></li>
+      </ul>
+      <p class="ac"><b>Accepted when:</b> the net worth on screen is within $1 of a manual sum of the institutions' own figures, and every card shows its correct next due date.</p>
+    </div>
+
+    <!-- F3 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F3</span><h3>Points tracking</h3><span class="tag mvp">MVP</span></div>
+      <p>No official API exposes points balances, so Porter combines <b>confirmed</b> balances (entered manually or parsed from emails) with an <b>estimate</b> computed from transactions since the last confirmation.</p>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>Quick manual update for each program (two taps plus number entry), with a "last confirmed" timestamp.</span></li>
+        <li><span class="tag p0">P0</span><span>Estimated balance = last confirmed + points earned since, using the catalog's earn rules applied to posted transactions. Clearly labeled as an estimate.</span></li>
+        <li><span class="tag p1">P1</span><span>Parse balances from issuer emails (statement emails and rewards summaries) when present. Each parsed value updates the confirmed balance and records where it came from.</span></li>
+        <li><span class="tag p1">P1</span><span>Reminder when a confirmed balance is more than 30 days old.</span></li>
+      </ul>
+      <p class="ac"><b>Accepted when:</b> after a month of normal spending, the estimated balance is within 3% of the issuer's actual balance for MR and UR.</p>
+    </div>
+
+    <!-- F4 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F4</span><h3>Benefits &amp; expiring credits</h3><span class="tag mvp">MVP</span></div>
+      <p>The feature that pays for the app. Every credit becomes a <b>benefit period</b> (for example "Gold dining credit, October 2026: $10, $0 used, resets Nov 1"), and Porter detects usage automatically.</p>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>Catalog of benefit definitions per card: amount, cadence (monthly, quarterly, semi-annual, calendar-year, or cardmember-year), and whether it needs enrollment or activation.</span></li>
+        <li><span class="tag p0">P0</span><span>Generate benefit periods automatically; cardmember-year benefits use each card's anniversary date.</span></li>
+        <li><span class="tag p0">P0</span><span>Detect usage from (a) the issuer's <b>statement credit</b> transactions (for example "Platinum Digital Entertainment Credit") and (b) qualifying merchant purchases matched by rules. Manual "mark used" as a fallback.</span></li>
+        <li><span class="tag p0">P0</span><span>"Needs attention" on the dashboard: unused credits expiring within 10 days, ordered by value × urgency.</span></li>
+        <li><span class="tag p0">P0</span><span>Push reminders at 7 days and 2 days before expiry (configurable per benefit), plus a monthly "credits reset today" note.</span></li>
+        <li><span class="tag p1">P1</span><span>Activation tasks: Freedom Flex quarterly categories, enrollment-required credits, DashPass. These show as checklist items until done.</span></li>
+        <li><span class="tag p1">P1</span><span>Annual fee scorecard per card: credits used plus estimated rewards value, compared with the annual fee.</span></li>
+      </ul>
+      <p class="ac"><b>Accepted when:</b> over a full quarter, no credit expires unused without a reminder, and auto-detection catches at least 90% of credits actually used.</p>
+    </div>
+
+    <!-- F5 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F5</span><h3>Budgets &amp; real-time spend</h3><span class="tag mvp">MVP</span></div>
+      <p>Weekly and monthly budgets, updated the moment I pay. See <a href="#realtime">§06</a> for how the data gets there.</p>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>One weekly and one monthly discretionary budget. Rent, card payments, transfers, and excluded categories don't count against them.</span></li>
+        <li><span class="tag p0">P0</span><span>Remaining = budget − (posted + pending + real-time spend events not yet matched to a transaction).</span></li>
+        <li><span class="tag p0">P0</span><span><b>Apple Pay → Dynamic Island</b>: within ~5 seconds of a tap, a Live Activity shows the card, merchant, amount, and the remaining weekly and monthly budget.</span></li>
+        <li><span class="tag p0">P0</span><span>Non-Apple Pay purchases (physical card, online) arrive as a push notification once an issuer alert email or Plaid reports them.</span></li>
+        <li><span class="tag p1">P1</span><span>Per-category budgets (dining, groceries, shopping, travel) with pace ("on track to finish the month at 112%").</span></li>
+        <li><span class="tag p1">P1</span><span>Card tip in the Live Activity: "Gold would have earned 4× here (+$1.80)".</span></li>
+      </ul>
+      <p class="ac"><b>Accepted when:</b> p95 tap-to-Island latency is under 5 seconds over 20 test purchases, and each purchase counts once against the budget no matter how many sources report it.</p>
+    </div>
+
+    <!-- F6 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F6</span><h3>Notifications &amp; daily digest</h3><span class="tag mvp">MVP</span></div>
+      <ul class="req">
+        <li><span class="tag p0">P0</span><span>Push categories: purchase, benefit expiring, payment due (5 days and 1 day before), connection broken, daily digest. Each can be switched off.</span></li>
+        <li><span class="tag p0">P0</span><span>Daily digest at 8:00 local time: yesterday's spend, budget remaining, credits expiring this week, payments due this week, net worth change.</span></li>
+        <li><span class="tag p1">P1</span><span>Quiet hours; related alerts grouped into one notification.</span></li>
+      </ul>
+    </div>
+
+    <!-- F7 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F7</span><h3>Personalized offers &amp; deals</h3><span class="tag p2">Phase 2</span></div>
+      <p>Amex Offers, Chase Offers, and Rakuten have no public consumer APIs. Porter ingests offer emails from Gmail, normalizes them, and ranks them against what I actually buy.</p>
+      <ul class="req">
+        <li><span class="tag p1">P1</span><span>Offer ingestion: parse offer and "offer added" emails into a normalized record (merchant, reward, minimum spend, expiry, card), with an LLM fallback for formats no parser handles yet.</span></li>
+        <li><span class="tag p1">P1</span><span>Quick add: paste or share-sheet an offer from the Amex/Chase app (screenshot → structured offer through vision extraction).</span></li>
+        <li><span class="tag p1">P1</span><span><b>Relevance v1 (no training data needed):</b> score = merchant affinity (how often and how recently I shop there) + category affinity + offer value − expiry penalty.</span></li>
+        <li><span class="tag p2">P2</span><span><b>Relevance v2 (learned):</b> logistic regression or a contextual bandit trained on my 👍 / dismiss / "used it" feedback plus transaction features. Retrained weekly.</span></li>
+        <li><span class="tag p2">P2</span><span>Alert when I buy at a merchant with an un-added or unused offer.</span></li>
+      </ul>
+    </div>
+
+    <!-- F8 -->
+    <div class="feature">
+      <div class="feature-head"><span class="fid">F8</span><h3>AI assistant</h3><span class="tag p2">Phase 3</span></div>
+      <p>Designed now, built after the MVP. See <a href="#ai">§09</a>. Covers: talk to my finances, a weekly summary, which card to use, and proactive suggestions.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="experience">
+    <h2><span class="num">05</span>Experience &amp; design</h2>
+    <p class="section-sub">Premium means fast, quiet, and precise. Superhuman is the reference point, not a bank.</p>
+
+    <div class="grid2">
+      <div class="card"><div class="k">Monochrome first</div><p>Near-black and off-white, one muted accent, no gradients. Color is reserved for state (warning, overdue).</p></div>
+      <div class="card"><div class="k">Typography does the work</div><p>SF Pro with tabular numerals. Big confident numbers, small quiet labels. Hierarchy from size and weight, not boxes.</p></div>
+      <div class="card"><div class="k">Speed is a feature</div><p>Cached screens show instantly (under 300 ms) and refresh in the background. No spinners on the home screen.</p></div>
+      <div class="card"><div class="k">Restrained motion</div><p>Spring transitions under 250 ms, light haptics on confirm, number roll on balance changes. Nothing bounces for fun.</p></div>
+      <div class="card"><div class="k">Dark mode is the default</div><p>Designed dark-first with true black backgrounds; light mode is a full theme, not an inversion.</p></div>
+      <div class="card"><div class="k">Everything answers "so what"</div><p>No chart without a sentence. Every alert says what to do next: "Use $10 Uber Cash before Friday."</p></div>
+    </div>
+
+    <h3>Information architecture</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tab</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><b>Home</b></td><td>Net worth and trend, needs attention (expiring credits, payments due, broken connections), budget remaining, recent activity.</td></tr>
+          <tr><td><b>Cards</b></td><td>Each card: balance, due date, points, credits used vs. available, annual fee scorecard.</td></tr>
+          <tr><td><b>Activity</b></td><td>Transactions plus spend events, budgets, search.</td></tr>
+          <tr><td><b>Benefits</b></td><td>Every credit grouped by expiry; activation checklist.</td></tr>
+          <tr><td><b>Ask</b> <span class="tag p2">Phase 3</span></td><td>AI assistant. In the MVP, a placeholder that is hidden from the tab bar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Key surfaces</h3>
+    <div class="mocks" aria-label="Illustrative app mockups">
+      <div class="mock-col">
+        <div class="phone">
+          <div class="island"></div>
+          <div class="ph-status" style="margin-top:-20px"><span>9:41</span><span>●●●</span></div>
+          <div style="margin-top:28px">
+            <div class="ph-k">Net worth</div>
+            <div class="ph-nw">$148,920</div>
+            <div class="ph-delta">+$1,240 this week</div>
+            <svg class="ph-spark" viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0,34 L20,32 L40,33 L60,28 L80,29 L100,24 L120,26 L140,20 L160,21 L180,15 L200,17 L220,10 L240,8" fill="none" stroke="#e9e9e6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="ph-sec">
+            <div class="ph-k">Needs attention</div>
+            <div class="ph-item"><div><div class="t"><span class="dot"></span>Uber Cash · Platinum</div><div class="s">$15 unused · expires in 2 days</div></div><div class="v">$15</div></div>
+            <div class="ph-item"><div><div class="t"><span class="dot"></span>Resy · Gold</div><div class="s">$50 unused · ends Dec 31</div></div><div class="v">$50</div></div>
+            <div class="ph-item"><div><div class="t"><span class="dot n"></span>Sapphire Preferred payment</div><div class="s">Due Nov 4 · statement balance</div></div><div class="v">$1,382</div></div>
+          </div>
+          <div class="ph-sec">
+            <div class="ph-k">This week</div>
+            <div class="ph-item"><div><div class="t">$186 left of $400</div><div class="s">Month · $1,140 left of $2,000</div></div><div class="v" style="width:70px"><div class="bar"><i style="width:54%"></i></div></div></div>
+          </div>
+          <div class="ph-tabs"><span class="on">Home</span><span>Cards</span><span>Activity</span><span>Benefits</span></div>
+        </div>
+        <div class="mock-caption">Home: one number, then only what needs me.</div>
+      </div>
+
+      <div class="mock-col">
+        <div class="phone">
+          <div class="island expanded">
+            <div class="isl-row">
+              <div class="isl-card"><span class="chip gold"></span><div><div style="font-weight:600">Amex Gold</div><div class="isl-merchant">Blue Bottle Coffee</div></div></div>
+              <div class="isl-amt">−$6.75</div>
+            </div>
+            <div class="isl-budget">
+              <div class="row"><span>This week</span><span><b>$179.25</b> left of $400</span></div>
+              <div class="bar"><i style="width:55%"></i></div>
+            </div>
+            <div class="isl-hint">+27 MR · 4× dining</div>
+          </div>
+          <div class="ph-lock-time">9:41</div>
+          <div class="ph-lock-date">Saturday, October 31</div>
+          <div class="la">
+            <div class="isl-row"><span class="ph-k">Porter</span><span class="ph-k">now</span></div>
+            <div class="isl-row" style="margin-top:6px"><span style="font-weight:600">Month remaining</span><span style="font-weight:600">$1,133.25</span></div>
+            <div class="bar" style="margin-top:8px"><i style="width:43%"></i></div>
+          </div>
+        </div>
+        <div class="mock-caption">Apple Pay tap → expanded Dynamic Island, then a compact Live Activity on the Lock Screen.</div>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:12.5px">Mockups are illustrative. All numbers are fake.</p>
+  </section>
+
+  <!-- 06 -->
+  <section id="realtime">
+    <h2><span class="num">06</span>Real-time spend pipeline</h2>
+    <p class="section-sub">The technically hardest MVP feature. Three sources report the same purchase at different speeds, and Porter merges them into one spend event.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Source</th><th>Covers</th><th>Typical latency</th><th>Mechanism</th></tr></thead>
+        <tbody>
+          <tr><td><b>Wallet automation</b></td><td>Any Apple Pay purchase, any card</td><td>~1–5 s</td><td>Shortcuts "Transaction" automation → Porter App Intent → Live Activity + API call</td></tr>
+          <tr><td><b>Issuer alert email</b></td><td>Amex, Chase, C1, Bilt purchase alerts (threshold set to $0)</td><td>~1–3 min</td><td>Gmail filter → forward → SES inbound → parser → push</td></tr>
+          <tr><td><b>Plaid webhook</b></td><td>Everything linked</td><td>Minutes to hours</td><td><code>SYNC_UPDATES_AVAILABLE</code> → <code>/transactions/sync</code></td></tr>
+          <tr><td><b>FinanceKit</b></td><td>Apple Card</td><td>Near real time, on device</td><td>Native module reads new transactions, posts them to the API</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Apple Pay → Dynamic Island</h3>
+    <ol class="steps">
+      <li><b>One-time setup.</b> I create a Shortcuts personal automation: <em>When I tap any Wallet card → Run "Log Purchase" (Porter)</em>, set to <em>Run Immediately</em>. iOS doesn't allow an app to create this automation itself, so Porter ships a guided setup screen and a shared Shortcut.</li>
+      <li><b>App Intent runs.</b> Porter exposes a Swift <code>LiveActivityIntent</code> that receives card, merchant, and amount. It runs in the background without opening the app.</li>
+      <li><b>Instant local math.</b> The intent reads the cached budget state (App Group storage), subtracts the amount, and starts or updates the Live Activity. This step doesn't wait on the network.</li>
+      <li><b>Durable record.</b> The intent POSTs a <code>spend_event</code> (idempotency key = hash of card, amount, and timestamp) to the API, which recomputes authoritative budgets and sends a Live Activity push-update if the result differs.</li>
+      <li><b>Reconcile.</b> When the email alert or Plaid transaction arrives, the matcher links it to the existing spend event instead of counting it twice.</li>
+    </ol>
+
+    <h3>Reconciliation rules</h3>
+    <ul>
+      <li>Match on account/card + amount + time window (72 h) + fuzzy merchant name. Restaurants allow up to +30% for tips, because the pending amount differs from the posted one.</li>
+      <li>A spend event moves through <code>realtime → pending → posted</code>. Any unmatched real-time event is resolved after 5 days.</li>
+      <li>Each spend event keeps a <b>provenance</b> list of every source that reported it. This is useful for debugging and later for AI citations.</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="k">Native code required</span>
+      <p>Live Activities, App Intents, and FinanceKit need Swift targets. Porter uses Expo <b>dev builds</b> (not Expo Go) with a widget extension (for example via <code>@bacons/apple-targets</code>) and a local Expo module for the intent and FinanceKit. Live Activity push updates go to APNs directly, because Expo's push service doesn't support the <code>liveactivity</code> push type.</p>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="architecture">
+    <h2><span class="num">07</span>System architecture</h2>
+    <p class="section-sub">A modular monolith: one FastAPI codebase deployed as an API service and a worker service, with real module boundaries inside.</p>
+
+    <div class="arch" aria-label="Architecture overview">
+      <div class="tier"><div class="tier-label">Device</div><div class="boxes">
+        <div class="box hl"><b>Expo app</b><span>React Native · TanStack Query · Face ID</span></div>
+        <div class="box"><b>Swift extensions</b><span>Live Activity widget · App Intent · FinanceKit</span></div>
+        <div class="box"><b>Shortcuts</b><span>Wallet transaction automation</span></div>
+      </div></div>
+      <div class="arrow">↓ HTTPS · Clerk JWT</div>
+      <div class="tier"><div class="tier-label">Edge</div><div class="boxes">
+        <div class="box"><b>Route 53 + ACM</b><span>api.porter domain</span></div>
+        <div class="box"><b>ALB + WAF</b><span>TLS, rate limits</span></div>
+      </div></div>
+      <div class="arrow">↓</div>
+      <div class="tier"><div class="tier-label">Compute</div><div class="boxes">
+        <div class="box hl"><b>API service</b><span>FastAPI on ECS Fargate (ARM)</span></div>
+        <div class="box hl"><b>Worker service</b><span>Same image; consumes SQS</span></div>
+        <div class="box"><b>EventBridge Scheduler</b><span>Digests, reminders, refreshes</span></div>
+      </div></div>
+      <div class="arrow">↓</div>
+      <div class="tier"><div class="tier-label">Data</div><div class="boxes">
+        <div class="box hl"><b>RDS PostgreSQL</b><span>Source of truth</span></div>
+        <div class="box"><b>SQS + DLQ</b><span>Sync, parse, notify jobs</span></div>
+        <div class="box"><b>S3</b><span>Raw emails (30-day TTL)</span></div>
+        <div class="box"><b>Secrets Manager · KMS</b><span>Plaid tokens, APNs key</span></div>
+      </div></div>
+      <div class="arrow">↕</div>
+      <div class="tier"><div class="tier-label">External</div><div class="boxes">
+        <div class="box"><b>Plaid</b><span>Link, webhooks, sync</span></div>
+        <div class="box"><b>Gmail → SES inbound</b><span>Alerts, statements, offers</span></div>
+        <div class="box"><b>APNs</b><span>Push + Live Activity</span></div>
+        <div class="box"><b>Clerk</b><span>Auth</span></div>
+        <div class="box"><b>Claude API</b><span>Extraction now, assistant later</span></div>
+      </div></div>
+    </div>
+
+    <h3>Backend modules</h3>
+    <p><code>identity</code> · <code>connections</code> (Plaid, FinanceKit ingest) · <code>ledger</code> (accounts, transactions, spend events, reconciliation) · <code>networth</code> · <code>catalog</code> (cards, earn rules, benefit definitions) · <code>benefits</code> · <code>points</code> · <code>budgets</code> · <code>inbox</code> (email ingestion and parsers) · <code>notifications</code> · <code>offers</code> · <code>assistant</code>.</p>
+    <p>Modules talk through service interfaces and domain events written to a <b>transactional outbox</b> table. A relay publishes those events to SQS, so a crash can never leave a transaction stored without its follow-up work.</p>
+
+    <h3>Email ingestion (Gmail)</h3>
+    <ol class="steps">
+      <li>Gmail filters (from Amex, Chase, Capital One, Bilt, Rakuten) auto-forward to <code>in@mail.&lt;porter-domain&gt;</code>.</li>
+      <li>An SES receipt rule stores the raw MIME in encrypted S3 and enqueues a job.</li>
+      <li>The worker tries a template parser first (deterministic, unit-tested against real fixtures). If no parser matches, Claude extracts fields into a strict JSON schema with a confidence score.</li>
+      <li>Low-confidence results go to an in-app "Review" inbox and are never applied silently.</li>
+    </ol>
+    <p style="color:var(--muted);font-size:14px">Why forwarding instead of the Gmail API: <code>gmail.readonly</code> is a restricted scope. An unverified Google app in "testing" mode has refresh tokens that expire every 7 days. Forwarding avoids both problems and keeps all ingestion inside AWS.</p>
+
+    <h3>Repository layout</h3>
+<pre style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;font:12.5px/1.6 ui-monospace,'SF Mono',Menlo,monospace;color:var(--ink-2)">porter-financial/
+├─ apps/mobile/          Expo app + targets/ (Swift widget, intents)
+├─ backend/              FastAPI · app/modules/* · alembic/ · tests/
+├─ catalog/              cards/*.yaml — earn rules &amp; benefits
+├─ infra/                Terraform (envs/staging, envs/prod)
+├─ docs/                 prd.html, ADRs
+└─ .github/workflows/    ci.yml, deploy.yml</pre>
+  </section>
+
+  <!-- 08 -->
+  <section id="data">
+    <h2><span class="num">08</span>Core data model</h2>
+    <p class="section-sub">Money is stored as integer cents. Every table has <code>user_id</code>, so the schema is ready for more than one user from day one.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Entity</th><th>Key fields</th></tr></thead>
+        <tbody>
+          <tr><td class="nowrap"><b>connection</b></td><td>provider (plaid / financekit), institution, encrypted token, cursor, status</td></tr>
+          <tr><td class="nowrap"><b>account</b></td><td>type (depository / credit / investment), mask, card_product_id, anniversary_date</td></tr>
+          <tr><td class="nowrap"><b>balance_snapshot</b></td><td>account_id, date, current, available, limit. Feeds the net worth history.</td></tr>
+          <tr><td class="nowrap"><b>liability</b></td><td>statement_balance, minimum_due, due_date, apr, last_payment</td></tr>
+          <tr><td class="nowrap"><b>transaction</b></td><td>provider_id, amount, merchant, category, status, spend_event_id</td></tr>
+          <tr><td class="nowrap"><b>spend_event</b></td><td>amount, merchant, card, state, sources[], idempotency_key</td></tr>
+          <tr><td class="nowrap"><b>card_product</b></td><td>issuer, name, rewards_program, annual_fee, earn_rules (versioned)</td></tr>
+          <tr><td class="nowrap"><b>benefit_definition</b></td><td>card_product_id, name, amount, cadence, match_rules, requires_enrollment</td></tr>
+          <tr><td class="nowrap"><b>benefit_period</b></td><td>definition_id, account_id, starts, ends, used_cents, status</td></tr>
+          <tr><td class="nowrap"><b>points_balance</b></td><td>program, confirmed, confirmed_at, source, estimated</td></tr>
+          <tr><td class="nowrap"><b>budget</b></td><td>period (week/month), amount, excluded_categories</td></tr>
+          <tr><td class="nowrap"><b>inbound_email</b></td><td>s3_key, sender, parser, extracted JSON, confidence, review_state</td></tr>
+          <tr><td class="nowrap"><b>offer</b> <span class="tag p2">P2</span></td><td>source, merchant, reward, min_spend, expires, card, score, feedback</td></tr>
+          <tr><td class="nowrap"><b>notification</b></td><td>kind, dedupe_key, sent_at, payload</td></tr>
+          <tr><td class="nowrap"><b>outbox_event</b></td><td>type, payload, published_at</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="ai">
+    <h2><span class="num">09</span>AI-native, by design</h2>
+    <p class="section-sub">Built after the MVP, but the MVP's data shapes are chosen with it in mind. The model explains results the system has computed; it never invents the numbers.</p>
+
+    <div class="grid2">
+      <div class="card"><div class="k">Ask anything</div><p>"Did I use my Uber credit this month?" "How much did I spend on dining vs. last October?" Chat over typed, read-only tools; answers cite the transactions and benefits they're based on.</p></div>
+      <div class="card"><div class="k">Weekly summary</div><p>Sunday evening: spend vs. budget, net worth change, value captured from credits, what's expiring, one suggestion. Written from computed facts.</p></div>
+      <div class="card"><div class="k">Which card?</div><p>A deterministic earn-rate engine (catalog + caps + quarterly categories + offers) ranks cards; the AI explains the choice. Available in the app and the Live Activity.</p></div>
+      <div class="card"><div class="k">Proactive suggestions</div><p>Detectors flag unused credits, wrong-card purchases, subscription price increases, and budget pace. The AI writes the alert; detectors decide whether it fires.</p></div>
+    </div>
+
+    <h3>What the MVP does now to enable this</h3>
+    <ul>
+      <li><b>Typed read APIs</b> for every domain (accounts, transactions, benefits, budgets, points). These become the assistant's tools with no rework.</li>
+      <li><b>Provenance everywhere</b>: spend event sources, parsed email IDs, catalog versions. Citations come for free.</li>
+      <li><b>Clean merchant normalization and categories.</b> Most of an AI assistant's quality comes from good data.</li>
+      <li>An <code>insight</code> table with detector name, facts JSON, and status, populated by deterministic rules in the MVP.</li>
+      <li>The Claude API is already used for email extraction, so prompts, evaluations, cost limits, and logging are in place before chat ships.</li>
+    </ul>
+
+    <h3>Guardrails</h3>
+    <ul>
+      <li>Read-only tools. No action that changes anything without explicit confirmation in the UI.</li>
+      <li>Account numbers and personal details are stripped before prompts; only the needed rows are sent.</li>
+      <li>An evaluation set of about 50 real questions with expected answers runs in CI whenever prompts change.</li>
+      <li>A monthly token budget with a hard cap and alerting.</li>
+    </ul>
+  </section>
+
+  <!-- 10 -->
+  <section id="security">
+    <h2><span class="num">10</span>Security &amp; privacy</h2>
+    <p class="section-sub">It's one user, but the data is everything about my money. Treat it that way.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Concern</th><th>Control</th></tr></thead>
+        <tbody>
+          <tr><td>App access</td><td>Clerk sign-in restricted to my user ID on the server; Face ID on launch and after 5 minutes in the background; screen blurred in the app switcher.</td></tr>
+          <tr><td>Plaid tokens</td><td>Envelope-encrypted with KMS at the application level, in addition to RDS encryption. Never returned to the client or written to logs.</td></tr>
+          <tr><td>Bank credentials</td><td>Never seen by Porter. Plaid Link and OAuth handle them.</td></tr>
+          <tr><td>Webhooks</td><td>Plaid webhook JWT verification; SES inbound limited to the forwarding address and SPF/DKIM-verified senders.</td></tr>
+          <tr><td>Network</td><td>RDS in private subnets; only the ALB is public; least-privilege IAM per service.</td></tr>
+          <tr><td>Data retention</td><td>Raw emails deleted after 30 days; extracted fields kept. One-tap "disconnect and purge" per institution.</td></tr>
+          <tr><td>Device</td><td>Only cached summaries on the device, in encrypted storage. No tokens.</td></tr>
+          <tr><td>Audit</td><td>Structured logs with personal data redacted; an audit trail of connection and sync events.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section id="infra">
+    <h2><span class="num">11</span>Infrastructure, delivery &amp; cost</h2>
+    <p class="section-sub">Production-shaped, but sized for one user.</p>
+
+    <h3>Delivery pipeline</h3>
+    <ul>
+      <li><b>Pull request:</b> ruff, mypy, pytest (against a real Postgres), OpenAPI diff, eslint/tsc, Terraform plan.</li>
+      <li><b>Merge to main:</b> build an ARM image, push to ECR, <code>terraform apply</code> to staging, run Alembic migrations, smoke tests.</li>
+      <li><b>Promote:</b> the same image to prod with a rolling ECS deployment that rolls back automatically on failed health checks.</li>
+      <li><b>Mobile:</b> EAS Build and TestFlight; EAS Update for JavaScript-only changes.</li>
+      <li><b>Operate:</b> CloudWatch dashboards and alarms (5xx rate, DLQ depth, sync lag, budget alert), OpenTelemetry traces.</li>
+    </ul>
+
+    <div class="chart" id="costChart">
+      <div class="chart-title">Estimated monthly run cost, about $96</div>
+      <div class="chart-sub">Rough estimates for us-east-1 with one user, before any free-tier savings. Hover a bar for details.</div>
+      <div id="costBars" style="position:relative"></div>
+      <div class="chart-foot"><span>Total</span><b id="costTotal"></b></div>
+      <details class="tableview"><summary>View as table</summary><div class="table-wrap"><table id="costTable"><thead><tr><th>Line item</th><th>$/mo</th><th>Note</th></tr></thead><tbody></tbody></table></div></details>
+    </div>
+    <p style="color:var(--muted);font-size:14px">Cost levers: skip the NAT Gateway (Fargate in public subnets behind security groups, about −$32); replace the ALB with App Runner in the early stage (about −$18). Plaid pricing depends on the plan negotiated in the Production application.</p>
+  </section>
+
+  <!-- 12 -->
+  <section id="roadmap">
+    <h2><span class="num">12</span>Roadmap</h2>
+    <p class="section-sub">Durations assume about 10–15 hours a week; read them as relative. The MVP is M0–M3.</p>
+
+    <div class="chart">
+      <div class="chart-title">Milestones by week</div>
+      <div class="chart-sub">Hover a bar for scope.</div>
+      <div class="gantt" id="gantt"></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>MVP</span><span><i style="background:var(--post)"></i>Post-MVP</span></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Milestone</th><th>Product outcome</th><th>Engineering outcome</th></tr></thead>
+        <tbody>
+          <tr><td class="nowrap"><b>M0</b> Foundations</td><td>App shell, design system, sign-in + Face ID</td><td>Monorepo, Terraform (VPC, RDS, ECS, ECR), CI/CD, FastAPI skeleton, Alembic. <b>Apply for Plaid Production and the FinanceKit entitlement on day one.</b></td></tr>
+          <tr><td class="nowrap"><b>M1</b> Connected money</td><td>All accounts linked; net worth, cards, due dates, transactions</td><td>Plaid adapter, webhooks, sync cursor, outbox + SQS worker, snapshots</td></tr>
+          <tr><td class="nowrap"><b>M2</b> Benefits &amp; points</td><td>Expiring credits on Home, reminders, points with estimates</td><td>Catalog YAML + loader, period generator, usage matcher, APNs push, SES inbound + first parsers</td></tr>
+          <tr><td class="nowrap"><b>M3</b> Real-time &amp; budgets</td><td>Apple Pay → Dynamic Island, budgets, daily digest, Apple Card</td><td>Swift targets, App Intent, Live Activity push, reconciliation engine, FinanceKit module</td></tr>
+          <tr><td class="nowrap"><b>M4</b> Offers</td><td>Ranked, relevant offers</td><td>Offer parsers, screenshot extraction, relevance v1, feedback logging</td></tr>
+          <tr><td class="nowrap"><b>M5</b> AI assistant</td><td>Ask, weekly summary, which card, suggestions</td><td>Tool layer, evaluation suite in CI, cost caps, detector framework</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section id="metrics">
+    <h2><span class="num">13</span>Success metrics</h2>
+    <p class="section-sub">Measured on my own usage.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>Card credits captured vs. available (quarterly)</td><td><b>≥ 95%</b></td></tr>
+          <tr><td>Credits expired without a prior reminder</td><td><b>0</b></td></tr>
+          <tr><td>Late or missed card payments</td><td><b>0</b></td></tr>
+          <tr><td>Apple Pay tap → Dynamic Island (p95)</td><td><b>&lt; 5 s</b></td></tr>
+          <tr><td>Purchases double-counted in budgets</td><td><b>0</b></td></tr>
+          <tr><td>Daily sync success across connections</td><td><b>≥ 99%</b></td></tr>
+          <tr><td>Home screen ready from cold start</td><td><b>&lt; 1.5 s</b></td></tr>
+          <tr><td>I open it daily without being prompted</td><td><b>≥ 5 days/week</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="risks">
+    <h2><span class="num">14</span>Risks &amp; mitigations</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>Plaid Production approval is slow or denied for a personal project</td><td>High</td><td>Apply in M0; build against the sandbox meanwhile; the provider adapter allows a SimpleFIN or Teller fallback.</td></tr>
+          <tr><td>FinanceKit entitlement delayed</td><td>Medium</td><td>Apple Card statement CSV import as a stopgap; Apple Pay purchases still arrive through the Wallet automation.</td></tr>
+          <tr><td>Bilt (new issuer) not well covered by Plaid</td><td>Medium</td><td>Test in M1; fall back to alert emails and manual balances.</td></tr>
+          <tr><td>Shortcuts automation unreliable or changed in a future iOS release</td><td>Medium</td><td>Email alerts as the second real-time path; health check reports "no Wallet events in 48 h".</td></tr>
+          <tr><td>Issuers change benefits or email templates</td><td>Medium</td><td>Catalog is data; parsers are fixture-tested; LLM fallback plus review inbox; parse-failure alarm.</td></tr>
+          <tr><td>AWS cost creep</td><td>Low</td><td>AWS Budgets alert at $120; no NAT Gateway; ARM Fargate; smallest RDS instance.</td></tr>
+          <tr><td>Scope creep (it's my app, everything is tempting)</td><td>High</td><td>This PRD: offers and AI stay out of the MVP until M3 is in daily use.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section id="open">
+    <h2><span class="num">15</span>Open questions</h2>
+    <ol>
+      <li><b>Budget numbers.</b> What should the weekly and monthly discretionary budgets be, and which categories are excluded (rent, travel, gifts)?</li>
+      <li><b>Card anniversaries.</b> Open month of each card, needed for cardmember-year credits and annual fee dates.</li>
+      <li><b>Bank of America and Schwab accounts.</b> Which checking, savings, and brokerage accounts count toward net worth? Include retirement accounts?</li>
+      <li><b>Points valuations.</b> Keep the default cents-per-point (MR/UR around 1.5–2¢, Bilt around 1.5–2¢) or set my own?</li>
+      <li><b>Domain.</b> Register a domain for the API and email ingestion (needed for SES inbound and ACM).</li>
+      <li><b>Daily digest timing.</b> Is 8:00 a.m. right? Should weekends be different?</li>
+    </ol>
+  </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">Porter · MVP PRD v0.1 · A working document: update it when the build proves something different.</div>
+</footer>
+
+<script>
+(function () {
+  // Cost chart (single series: no legend; title names it)
+  var costs = [
+    ["Fargate", 18, "API + worker: 2 ARM tasks, 0.25 vCPU / 0.5 GB each"],
+    ["Load balancer", 18, "Fixed hourly + LCU; App Runner can replace it early"],
+    ["RDS Postgres", 16, "db.t4g.micro, 20 GB gp3, 7-day backups"],
+    ["Plaid", 15, "~6 connections; depends on the plan negotiated"],
+    ["Claude API", 10, "Email extraction now, assistant later; hard cap"],
+    ["Apple Developer", 8, "$99 / year"],
+    ["Networking", 6, "Public IPv4s; no NAT Gateway"],
+    ["DNS, email, storage", 5, "Route 53, SES, S3, KMS, Secrets Manager, CloudWatch, ECR"]
+  ];
+  var max = Math.max.apply(null, costs.map(function (c) { return c[1]; }));
+  var bars = document.getElementById("costBars");
+  var tbody = document.querySelector("#costTable tbody");
+  var tip = document.createElement("div");
+  tip.className = "tip";
+  var total = 0;
+  costs.forEach(function (c) {
+    total += c[1];
+    var row = document.createElement("div");
+    row.className = "hbar";
+    row.innerHTML = '<div class="lbl">' + c[0] + '</div><div class="track"><div class="fill" style="width:calc((100% - 44px) * ' + (c[1] / max) + ')"></div><span class="val">$' + c[1] + '</span></div>';
+    row.addEventListener("mouseenter", function () { tip.textContent = c[0] + " · $" + c[1] + "/mo · " + c[2]; tip.classList.add("on"); });
+    row.addEventListener("mousemove", function (e) {
+      var r = bars.getBoundingClientRect();
+      var x = Math.min(e.clientX - r.left + 12, r.width - tip.offsetWidth);
+      tip.style.left = Math.max(0, x) + "px";
+      tip.style.top = (e.clientY - r.top - 36) + "px";
+    });
+    row.addEventListener("mouseleave", function () { tip.classList.remove("on"); });
+    bars.appendChild(row);
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + c[0] + "</td><td>$" + c[1] + "</td><td>" + c[2] + "</td>";
+    tbody.appendChild(tr);
+  });
+  bars.appendChild(tip);
+  document.getElementById("costTotal").textContent = "≈ $" + total + " / month";
+
+  // Roadmap gantt (weeks 1–16)
+  var W = 16;
+  var ms = [
+    ["M0", "Foundations", 1, 2, true, "Repo, Terraform, CI/CD, auth, Plaid + FinanceKit applications"],
+    ["M1", "Connected money", 3, 5, true, "Plaid sync, net worth, cards, due dates"],
+    ["M2", "Benefits & points", 6, 8, true, "Catalog, expiring credits, reminders, email ingestion"],
+    ["M3", "Real-time & budgets", 9, 11, true, "Wallet → Dynamic Island, budgets, digest, Apple Card"],
+    ["M4", "Offers", 12, 13, false, "Offer parsing + relevance ranking"],
+    ["M5", "AI assistant", 14, 16, false, "Ask, weekly summary, which card, suggestions"]
+  ];
+  var g = document.getElementById("gantt");
+  var gtip = document.createElement("div");
+  gtip.className = "tip";
+  var axis = document.createElement("div");
+  axis.className = "gantt-axis";
+  var ticks = "";
+  [1, 4, 8, 12, 16].forEach(function (w) { ticks += '<span style="left:' + ((w - 0.5) / W * 100) + '%">W' + w + "</span>"; });
+  axis.innerHTML = '<div></div><div class="ticks">' + ticks + "</div>";
+  g.appendChild(axis);
+  ms.forEach(function (m, i) {
+    var row = document.createElement("div");
+    row.className = "gantt-row";
+    var left = (m[2] - 1) / W * 100, width = (m[3] - m[2] + 1) / W * 100;
+    var line = i === 0 ? '<div class="mvp-line" style="left:' + (11 / W * 100) + '%;top:-22px;bottom:auto;height:0"></div>' : "";
+    row.innerHTML = '<div class="lbl">' + m[0] + " · " + m[1] + "<small>Weeks " + m[2] + "–" + m[3] + '</small></div><div class="lane"><div class="gbar' + (m[4] ? "" : " post") + '" style="left:calc(' + left + '% + 1px);width:calc(' + width + '% - 2px)"></div></div>';
+    row.addEventListener("mouseenter", function () { gtip.textContent = m[0] + " · " + m[5]; gtip.classList.add("on"); });
+    row.addEventListener("mousemove", function (e) {
+      var r = g.getBoundingClientRect();
+      var x = Math.min(e.clientX - r.left + 12, r.width - gtip.offsetWidth);
+      gtip.style.left = Math.max(0, x) + "px";
+      gtip.style.top = (e.clientY - r.top - 36) + "px";
+    });
+    row.addEventListener("mouseleave", function () { gtip.classList.remove("on"); });
+    g.appendChild(row);
+  });
+  // MVP marker spanning all lanes
+  var lanes = g.querySelectorAll(".lane");
+  var first = lanes[0], last = lanes[lanes.length - 1];
+  function placeMarker() {
+    var old = g.querySelector(".mvp-line.abs"); if (old) old.remove();
+    var gr = g.getBoundingClientRect(), fr = first.getBoundingClientRect(), lr = last.getBoundingClientRect();
+    var mk = document.createElement("div");
+    mk.className = "mvp-line abs";
+    mk.style.left = (fr.left - gr.left + fr.width * 11 / W) + "px";
+    mk.style.top = (fr.top - gr.top - 4) + "px";
+    mk.style.bottom = "auto";
+    mk.style.height = (lr.bottom - fr.top + 8) + "px";
+    mk.innerHTML = "<span>MVP</span>";
+    g.appendChild(mk);
+  }
+  g.querySelectorAll(".mvp-line:not(.abs)").forEach(function (n) { n.remove(); });
+  placeMarker();
+  window.addEventListener("resize", placeMarker);
+  g.style.position = "relative";
+  g.appendChild(gtip);
+})();
+</script>
+</body>
+</html>
