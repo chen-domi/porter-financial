@@ -1,0 +1,52 @@
+name: Deploy environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image_uri:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Configure the "prod" environment with required reviewers to gate promotion.
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: infra/envs/${{ inputs.environment }}
+    env:
+      TF_VAR_image_uri: ${{ inputs.image_uri }}
+      TF_VAR_clerk_issuer: ${{ vars.CLERK_ISSUER }}
+      TF_VAR_allowed_user_ids: ${{ vars.ALLOWED_USER_IDS }}
+      TF_VAR_alert_email: ${{ vars.ALERT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+      - run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+      - run: terraform apply -input=false -auto-approve
+      - name: Run migrations
+        run: |
+          fn=$(terraform output -raw migrate_function_name)
+          aws lambda invoke --function-name "$fn" --payload '{}' \
+            --cli-binary-format raw-in-base64-out /tmp/migrate.json
+          cat /tmp/migrate.json
+          jq -e '.status == "ok"' /tmp/migrate.json
+      - name: Smoke test
+        run: |
+          url=$(terraform output -raw api_url)
+          curl --fail --silent --show-error --retry 5 --retry-all-errors "$url/health"
